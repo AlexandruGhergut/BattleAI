@@ -56,5 +56,3 @@ local.properties
 
 config/
 *~
-/Engine/nbproject/private/
-/Engine/build/
