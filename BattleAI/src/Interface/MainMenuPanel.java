@@ -1,5 +1,6 @@
 package Interface;
 
+import Editor.Editor;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -109,7 +110,8 @@ public class MainMenuPanel extends JPanel {
     }//GEN-LAST:event_multiplayerButtonActionPerformed
 
     private void editorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editorButtonActionPerformed
-        
+        rootFrame.setVisible(false);
+        Editor editor= new Editor(rootFrame);
     }//GEN-LAST:event_editorButtonActionPerformed
 
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
