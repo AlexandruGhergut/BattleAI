@@ -1,8 +1,8 @@
 package Visual;
 
 import Console.ConsoleFrame;
+import Constants.PathConstants;
 import Engine.Bullet;
-import Engine.Drawable;
 import Engine.Tank;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -36,9 +37,9 @@ public class VisualPanel extends javax.swing.JPanel {
         initComponents();
         
         try {
-            tankSprite = ImageIO.read(this.getClass().getResource(Constants.VisualConstants.TANK_BODY_SPRITE_PATH));
-            cannonSprite = ImageIO.read(this.getClass().getResource(Constants.VisualConstants.TANK_CANNON_SPRITE_PATH));
-            bulletSprite = ImageIO.read(this.getClass().getResource(Constants.VisualConstants.BULLET_SPRITE_PATH));
+            tankSprite = ImageIO.read(new File(PathConstants.TANK_BODY_SPRITE_PATH));
+            cannonSprite = ImageIO.read(new File(PathConstants.TANK_CANNON_SPRITE_PATH));
+            bulletSprite = ImageIO.read(new File(PathConstants.BULLET_SPRITE_PATH));
         } catch (IOException ex) {
             ConsoleFrame.sendMessage("VisualPanel", "Failed to get sprites");
         }

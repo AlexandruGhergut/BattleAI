@@ -6,6 +6,7 @@
 package Editor;
 
 import Console.ConsoleFrame;
+import Constants.PathConstants;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,7 +17,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -27,8 +27,7 @@ import javax.swing.JOptionPane;
  */
 public final class SourceManager {
     
-    private static final String SOURCE_FOLDER_PATH = "Inteligence/";
-    private static final String AI_TEMPLATE_PATH = "../Inteligence/res/AITemplate.txt";
+    private static final String SOURCE_FOLDER_PATH = PathConstants.USER_SOURCES_FOLDER_PATH;
     private static List<Source> sources = new ArrayList<>();
     private static SourceManager instance;
     
@@ -42,52 +41,17 @@ public final class SourceManager {
         if(!sourceFolder.exists()){
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Creating source folder");
             sourceFolder.mkdir();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Testing read/write permissions source folder");
-            if(!sourceFolder.canRead()){
-                throw new IOException("Can't read from designated folder!");
-            }
-            if(!sourceFolder.canWrite()){
-                throw new IOException("Can't write to designated folder!");
-            }
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Creating source index file");
-            File sourceIndex = new File(SOURCE_FOLDER_PATH+"/sourcesIndex.txt");
-            sourceIndex.createNewFile();
-            
-            try (FileOutputStream fOutput = new FileOutputStream(sourceIndex); 
-                    ObjectOutputStream oOutput = new ObjectOutputStream(fOutput)) {
-                sources.add(new Source("TEST", "Test1", "Dragos"));
-                sources.add(new Source("TEST", "Test2", "Dragos"));
-                sources.add(new Source("TEST", "Test3", "Dragos"));
-                oOutput.writeObject(sources);
-            }
-            
+            checkReadWrite(sourceFolder);
+            writeSourceFileIndex(sourceFolder);
         }else{
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Source folder exists");
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Searching for source index file");
             File sourceIndex = new File(SOURCE_FOLDER_PATH+"/sourcesIndex.txt");
             if(!sourceIndex.exists()){
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Creating source index file");
-                sourceIndex.createNewFile();
-
-                try (FileOutputStream fOutput = new FileOutputStream(sourceIndex); 
-                        ObjectOutputStream oOutput = new ObjectOutputStream(fOutput)) {
-                    ConsoleFrame.sendMessage(this.getClass().getSimpleName(), 
-                            "Writing empty source list to source index file");
-                sources.add(new Source("TEST", "Test1", "Dragos"));
-                sources.add(new Source("TEST", "Test2", "Dragos"));
-                sources.add(new Source("TEST", "Test3", "Dragos"));
-                    oOutput.writeObject(sources);
-                }
+                writeSourceFileIndex(sourceIndex);
             }else{
                 ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Source index file exists");
-                try (FileInputStream fInput = new FileInputStream(sourceIndex);
-                        ObjectInputStream oInput = new ObjectInputStream(fInput)){
-                    ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Reading from source index file");
-                    sources = (ArrayList<Source>)oInput.readObject();
-                    
-                } catch (ClassNotFoundException ex) {
-                    ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Couldn't read from source index");
-                }
+                sources = readSourceFileIndex(sourceIndex);
             }
         }
         if(!sources.isEmpty()){
@@ -107,10 +71,48 @@ public final class SourceManager {
                 instance = new SourceManager();
             } catch (IOException ex) {
                 ConsoleFrame.sendMessage(SourceManager.class.getSimpleName(), ex.getMessage());
+                ex.printStackTrace();
                 System.exit(-1);
             }
         }
         return instance;
+    }
+    
+    private void checkReadWrite(File sourceFolder) throws IOException{
+        ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Testing read/write permissions source folder");
+        if(!sourceFolder.canRead()){
+            throw new IOException("Can't read from designated folder!");
+        }
+        if(!sourceFolder.canWrite()){
+            throw new IOException("Can't write to designated folder!");
+        }
+    }
+    
+    private List<Source> readSourceFileIndex(File sourceIndex) throws IOException{
+        List<Source> auxSource = null;
+        try (FileInputStream fInput = new FileInputStream(sourceIndex);
+                ObjectInputStream oInput = new ObjectInputStream(fInput)){
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Reading from source index file");
+            auxSource = (ArrayList<Source>)oInput.readObject();
+
+        } catch (ClassNotFoundException ex) {
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Couldn't read from source index");
+        }
+        return auxSource;
+    }
+    
+    private void writeSourceFileIndex(File sourceIndex) throws IOException{
+        ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Creating source index file");
+        if(sourceIndex.createNewFile()){
+            try (FileOutputStream fOutput = new FileOutputStream(sourceIndex); 
+                    ObjectOutputStream oOutput = new ObjectOutputStream(fOutput)) {
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), 
+                        "Writing empty source list to source index file");
+                oOutput.writeObject(sources);
+            }
+        }else{
+            
+        }
     }
     
     public void moveFileToSourceFolder(File file){
@@ -141,10 +143,8 @@ public final class SourceManager {
      * @return inteligenceTemplate
      */
     public String getInteligenceTemplate(){
-        URL resource = this.getClass().getResource(AI_TEMPLATE_PATH);
-        
-        if(resource != null){
-            File template = new File((this.getClass().getResource(AI_TEMPLATE_PATH)).getFile());
+        File template = new File(PathConstants.AI_TEMPLATE);
+        if(template.exists()){
             try (FileReader fileReader = new FileReader(template);
                     BufferedReader bufferedReader = new BufferedReader(fileReader)){
                 while(bufferedReader.ready()){
@@ -155,7 +155,7 @@ public final class SourceManager {
                     JOptionPane.showMessageDialog(null, "Failed to read AI template","Error", JOptionPane.ERROR_MESSAGE);
             }
         }else{
-            ConsoleFrame.sendMessage(this.getClass().getCanonicalName(), "Could not find AI template!");
+            ConsoleFrame.sendMessage(this.getClass().getCanonicalName(), "Could not find AI template at " + template.getAbsolutePath());
             JOptionPane.showMessageDialog(null, "Failed to find AI template","Error", JOptionPane.ERROR_MESSAGE);
         }
         return AI_TEMPLATE_CONTENT;
