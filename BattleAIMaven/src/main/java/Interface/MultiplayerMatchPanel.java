@@ -1,5 +1,13 @@
 package Interface;
 
+import Console.ConsoleFrame;
+import Editor.Source;
+import Editor.SourceManager;
+import java.awt.Color;
+import java.util.List;
+import javax.swing.DefaultListModel;
+import javax.swing.ListSelectionModel;
+
 /**
  *
  * @author Dragos-Alexandru
@@ -7,6 +15,12 @@ package Interface;
 public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
     MainFrame rootFrame;
+    
+    private final List<Source> sourceList;
+    private Source selectedSource;
+    private final DefaultListModel listModel = new DefaultListModel();
+    private final DefaultListModel playerSelectionModel = new DefaultListModel();
+    private boolean ready = false;
     
     /**
      * Creates new form MultiplayerMatchPanel
@@ -17,6 +31,16 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
         this.chatOutputArea.setEditable(false);
         this.serverNameLabel.setText(rootFrame.localServerName);
         this.rootFrame = rootFrame;
+        
+        listAvailableScripts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sourceList = SourceManager.getInstance().getSourceList();
+        for(Source source:sourceList){
+            listModel.addElement(source.toListString());
+        }
+        listAvailableScripts.setModel(listModel);
+        try{
+            listAvailableScripts.setSelectedIndex(0);
+        }catch(IndexOutOfBoundsException ex){}
     }
 
     /**
@@ -35,8 +59,8 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         scrollPlayersAndScripts = new javax.swing.JScrollPane();
         listPlayersAndScripts = new javax.swing.JList();
-        addButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
+        selectButton = new javax.swing.JButton();
+        readyButton = new javax.swing.JButton();
         startButton = new javax.swing.JButton();
         chatOutputScroll = new javax.swing.JScrollPane();
         chatOutputArea = new javax.swing.JTextArea();
@@ -49,6 +73,7 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
         setMinimumSize(new java.awt.Dimension(600, 400));
 
         serverNameLabel.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        serverNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         serverNameLabel.setText("Server name");
 
         listAvailableScripts.setMaximumSize(new java.awt.Dimension(40, 80));
@@ -63,19 +88,19 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
         listPlayersAndScripts.setMinimumSize(new java.awt.Dimension(40, 80));
         scrollPlayersAndScripts.setViewportView(listPlayersAndScripts);
 
-        addButton.setBackground(new java.awt.Color(102, 255, 102));
-        addButton.setText("Add");
-        addButton.addActionListener(new java.awt.event.ActionListener() {
+        selectButton.setBackground(new java.awt.Color(102, 255, 102));
+        selectButton.setText("Select");
+        selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
+                selectButtonActionPerformed(evt);
             }
         });
 
-        removeButton.setBackground(new java.awt.Color(255, 51, 51));
-        removeButton.setText("Remove");
-        removeButton.addActionListener(new java.awt.event.ActionListener() {
+        readyButton.setBackground(new java.awt.Color(255, 255, 0));
+        readyButton.setText("Ready");
+        readyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
+                readyButtonActionPerformed(evt);
             }
         });
 
@@ -118,29 +143,26 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                         .addGap(11, 11, 11)
                         .addComponent(scrollAvailable, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(10, 10, 10)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(chatInputField)
                                 .addGap(18, 18, 18)
                                 .addComponent(sendButton, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(chatOutputScroll, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(startButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(backButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(startButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addGroup(layout.createSequentialGroup()
-                                                .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(selectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(removeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(0, 1, Short.MAX_VALUE))
-                                            .addComponent(backButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(46, 46, 46)
-                                        .addComponent(serverNameLabel)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                                .addComponent(scrollPlayersAndScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(chatOutputScroll)))
+                                                .addComponent(readyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(serverNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGap(0, 1, Short.MAX_VALUE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(scrollPlayersAndScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel2)
@@ -155,19 +177,19 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(scrollPlayersAndScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(8, 8, 8))
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(serverNameLabel)
+                                .addComponent(serverNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(removeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(selectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(readyButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(29, 29, 29)
                                 .addComponent(startButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -178,20 +200,34 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(chatInputField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(sendButton)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(scrollAvailable, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(scrollAvailable, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        
-    }//GEN-LAST:event_addButtonActionPerformed
+    private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
+        int index = listAvailableScripts.getSelectedIndex();
+        if(selectedSource != null){
+            playerSelectionModel.removeElement(rootFrame.getUser().getUsername()+" / "+selectedSource.getName());
+        }
+        try{
+            selectedSource = sourceList.get(index);
+            playerSelectionModel.addElement(rootFrame.getUser().getUsername()+" / "+selectedSource.getName());
+            listPlayersAndScripts.setModel(playerSelectionModel);
+        }catch(IndexOutOfBoundsException ex){
+            ConsoleFrame.showError("Select script, please");
+        }
+    }//GEN-LAST:event_selectButtonActionPerformed
 
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        
-    }//GEN-LAST:event_removeButtonActionPerformed
+    private void readyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readyButtonActionPerformed
+        if(ready){
+            ready = false;
+            readyButton.setBackground(Color.YELLOW);
+        }else{
+            ready = true;
+            readyButton.setBackground(Color.BLUE);
+        }
+    }//GEN-LAST:event_readyButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
         
@@ -207,7 +243,6 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
     private javax.swing.JButton backButton;
     private javax.swing.JTextField chatInputField;
     private javax.swing.JTextArea chatOutputArea;
@@ -216,9 +251,10 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JList listAvailableScripts;
     private javax.swing.JList listPlayersAndScripts;
-    private javax.swing.JButton removeButton;
+    private javax.swing.JButton readyButton;
     private javax.swing.JScrollPane scrollAvailable;
     private javax.swing.JScrollPane scrollPlayersAndScripts;
+    private javax.swing.JButton selectButton;
     private javax.swing.JButton sendButton;
     private javax.swing.JLabel serverNameLabel;
     private javax.swing.JButton startButton;

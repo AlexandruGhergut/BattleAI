@@ -3,8 +3,7 @@ package Visual;
 import Console.ConsoleFrame;
 import Engine.Bullet;
 import Engine.Tank;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 
@@ -23,6 +22,10 @@ public class Animator extends Thread{
     private final List<Tank> tanks;
     private final List<Bullet> bullets;
     private final TankFiringThread firingThread;
+    private Thread paintThread;
+    volatile boolean updateDone;
+    long c = 0;
+    
     
     public Animator(JPanel panel, List<Tank> tanks, List<Bullet> bullets){
         this.panel = panel;
@@ -34,40 +37,80 @@ public class Animator extends Thread{
     
     @Override
     public void run(){
+        ArrayList<Bullet> bulletsRemaining = new ArrayList<>();
         firingThread.start();
+        double lel;
         
         while(running){
-            
             //DO ENTITY UPDATES
+            updateDone = false;
             for (Tank tankAux : tanks) {
-                tankAux.rotateCannon(-0.2);
-                tankAux.rotate(0.5);
+
+                tankAux.rotateCannon((Math.random()*(Math.random()-0.5)*70)%360);
+                tankAux.rotate((Math.random()*(Math.random()-0.5)*300)%360);
                 
-                if(tankAux.getLife() - 0.3 > 0)
-                    tankAux.setLife(tankAux.getLife()-0.3);
-                else
+                lel = Math.random()*2;
+                
+                if (tankAux.getLife() - lel > 0) {
+                    tankAux.setLife(tankAux.getLife() - lel);
+                } else {
                     tankAux.setLife(100);
-                
-               // tankAux.moveFront();
-            }
-            synchronized(bullets){
-                List<Bullet> bulletsToBeRemoved = Collections.synchronizedList(new LinkedList<Bullet>());
-                for(Bullet bulletAux: bullets){
-                    if(bulletAux.getX() > Constants.VisualConstants.ENGINE_WIDTH || bulletAux.getX() < 0 ||
-                            bulletAux.getY() > Constants.VisualConstants.ENGINE_HEIGHT || bulletAux.getY() < 0){
+                }
+
+                tankAux.moveFront();
+
+            } 
+            synchronized (bullets) {
+                // List<Bullet> bulletsToBeRemoved = Collections.synchronizedList(new LinkedList<Bullet>());
+                for (Bullet bulletAux : bullets) {
+                    if (!(bulletAux.getX() > Constants.VisualConstants.ENGINE_WIDTH || bulletAux.getX() < 0
+                            || bulletAux.getY() > Constants.VisualConstants.ENGINE_HEIGHT || bulletAux.getY() < 0)) {
                         //if the bullet is no longer on the screen, it's removed
-                        bulletsToBeRemoved.add(bulletAux);
-                    }
-                    else{
+                        //bulletsToBeRemoved.add(bulletAux);
                         bulletAux.moveFront();
+                        bulletsRemaining.add(bulletAux);
+                    } else {
+                        // bulletAux.moveFront();
                     }
                 }
-                for(Bullet bulletAux:bulletsToBeRemoved){
-                    bullets.remove(bulletAux);
+
+                bullets.clear();
+
+                for (int i = 0; i < bulletsRemaining.size(); i++) {
+                    bullets.add(bulletsRemaining.get(i));
                 }
+
+                bulletsRemaining.clear();
+
+                /*for(Bullet bulletAux:bulletsToBeRemoved){
+                    bullets.remove(bulletAux);
+                }*/
+                updateDone = true;
             }
-             
-            panel.repaint();    //done with updates, start painting
+ 
+            
+            if (paintThread == null || !paintThread.isAlive()) {
+                paintThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (running) {
+                            panel.repaint();
+
+                            try {
+                                Thread.sleep(1000 / framerate);
+                            } catch (InterruptedException ex) {
+                                ConsoleFrame.sendMessage("paintThread", "paintThread interrupted");
+                            }
+                        }
+
+                    }
+                });
+
+                paintThread.start();
+
+            }
+            
+            //panel.repaint();  
             
             try{
                 Thread.sleep(1000/framerate);

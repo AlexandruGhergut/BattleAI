@@ -96,4 +96,8 @@ public class Match implements Serializable {
         if (maxNumberOfPlayers > this.maxNumberOfPlayers)
             this.maxNumberOfPlayers = maxNumberOfPlayers;
     }
+    
+    public String toListMatch(){
+        return title+" / "+OWNER;
+    }
 }

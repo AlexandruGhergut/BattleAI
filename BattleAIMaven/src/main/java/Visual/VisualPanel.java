@@ -44,7 +44,10 @@ public class VisualPanel extends javax.swing.JPanel {
             ConsoleFrame.sendMessage("VisualPanel", "Failed to get sprites");
         }
 
-        tanks.add(new Tank(300, 300, 2, 100, 0, 100,"Tank1", tankSprite, cannonSprite));
+        for(int i = 0; i<20; i++)
+        tanks.add(new Tank(Math.random()*1000%Constants.VisualConstants.ENGINE_WIDTH, 
+                Math.random()*1000%Constants.VisualConstants.ENGINE_HEIGHT, 2, 100, 0, 100,"Tank1", tankSprite, cannonSprite));
+
         
         for(Tank aux:tanks){
             System.out.println(aux);
@@ -87,7 +90,7 @@ public class VisualPanel extends javax.swing.JPanel {
         }
         
         g.setColor(Color.BLACK);
-        g.drawString("FPS: "+totalFrames, 2, 11);
+        g.drawString("FPS: "+totalFrames + " number of bullets: "+bullets.size(), 2, 11);
     }
     
     /**

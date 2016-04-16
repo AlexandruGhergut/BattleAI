@@ -1,6 +1,7 @@
 package Interface;
 
 import Constants.FrameConstants;
+import Main.User;
 import Visual.VisualEngine;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -15,6 +16,12 @@ public class MainFrame extends JFrame implements FrameConstants{
     
     public static MainFrame instance;
     public String localServerName = null;
+    
+    
+    private boolean loggedIn = false;
+    private final User localUser = new User("Local", "");
+    private User loggedInUser;
+    
     /**
      * Frame-ul principal al programului
      */
@@ -48,6 +55,23 @@ public class MainFrame extends JFrame implements FrameConstants{
             });
         }
         return instance;
+    }
+    
+    public void logout(){
+        loggedIn = false;
+        loggedInUser = null;
+    }
+    
+    public void login(String username, String password){
+        loggedIn = true;
+        loggedInUser = new User(username, password);
+    }
+    
+    public User getUser(){
+        if(loggedIn){
+            return loggedInUser;
+        }
+        return localUser;
     }
     
     public void changePanel(JPanel panel){

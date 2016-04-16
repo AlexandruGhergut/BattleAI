@@ -19,7 +19,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -108,13 +107,31 @@ public final class SourceManager {
                     ObjectOutputStream oOutput = new ObjectOutputStream(fOutput)) {
                 ConsoleFrame.sendMessage(this.getClass().getSimpleName(), 
                         "Writing empty source list to source index file");
+                sources.add(new Source("Test test test", "Test1", "Dragos"));
+                sources.add(new Source("Test test test", "Test2", "Tanase"));
+                sources.add(new Source("Test test test", "Test3", "Alex"));
+                sources.add(new Source("Test test test", "Test4", "Liviu"));
+                sources.add(new Source("Test test test", "Test5", "Alexandra"));
                 oOutput.writeObject(sources);
             }
-        }else{
-            
         }
     }
     
+    public List<Source> getSourceList(){
+        File sourceIndex = new File(PathConstants.USER_SOURCES_INDEX_PATH);
+        try {
+            return readSourceFileIndex(sourceIndex);
+        } catch (IOException ex) {
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to read source list "+ex.getMessage());
+            ConsoleFrame.showError("Failed to read source list");
+            return (new ArrayList<>());
+        }
+    }
+    
+    /**
+     * Moves files to the source folder
+     * @param file 
+     */
     public void moveFileToSourceFolder(File file){
         File newSource = new File(SOURCE_FOLDER_PATH+file.getName());
         try {

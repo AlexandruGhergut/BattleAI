@@ -1,5 +1,6 @@
 package Database;
 
+import Console.ConsoleFrame;
 import java.sql.*;
 
 /**
@@ -47,9 +48,11 @@ public class DatabaseHandler {
         } catch (SQLException se) {
             // Handle errors for JDBC   
             se.printStackTrace();
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to find driver or some other sql error, please open sql(mysqld)");
         } catch (Exception e) {
             // Handle errors for Class.forName
             e.printStackTrace();
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to initializa local JDBC");
         }
     }
 

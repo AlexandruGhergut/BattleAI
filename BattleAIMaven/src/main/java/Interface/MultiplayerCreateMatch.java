@@ -12,10 +12,11 @@ import javax.swing.SwingWorker;
  */
 public class MultiplayerCreateMatch extends javax.swing.JPanel {
 
-    private MainFrame rootFrame;
+    private final MainFrame rootFrame;
     
     /**
      * Creates new form MultiplayerCreateMatch
+     * @param rootFrame
      */
     public MultiplayerCreateMatch(MainFrame rootFrame) {
         initComponents();
@@ -179,7 +180,7 @@ public class MultiplayerCreateMatch extends javax.swing.JPanel {
             protected Boolean doInBackground() throws Exception {
                 Match activeMatch = new Match(serverNameField.getText(),
                         "localhost", Integer.parseInt(serverPortField.getText()),
-                        "test", 20);
+                        rootFrame.getUser().getUsername(), 20);
                 Boolean succes = ConnectionHandler.getInstance().hostMatch(activeMatch);
                 
                 return succes;

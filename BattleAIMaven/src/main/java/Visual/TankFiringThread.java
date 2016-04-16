@@ -25,21 +25,24 @@ public class TankFiringThread extends Thread{
     }
     
     @Override
-    public void run(){
+    public void run() {
         Bullet auxBullet;
-        
-        while(running){
+
+        while (running) {
             for (Tank tankAux : tanks) {
                 auxBullet = tankAux.fire();
-                synchronized(bullets){
+
+                synchronized (bullets) {
                     bullets.add(auxBullet);
                 }
             }
+
             try {
-                Thread.sleep((long)(Math.random()*100));    //random firing time (500 ms gets 20-30 bullets on the screen)
+                Thread.sleep((long) (Math.random()*15));    //random firing time (500 ms gets 20-30 bullets on the screen)
             } catch (InterruptedException ex) {
                 ConsoleFrame.sendMessage("TankFiringThread", "Sleep interrupted");
             }
+
         }
     }
     

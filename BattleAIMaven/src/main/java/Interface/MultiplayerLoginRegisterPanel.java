@@ -1,5 +1,9 @@
 package Interface;
 
+import Console.ConsoleFrame;
+import Security.Guard;
+import javax.swing.SwingWorker;
+
 /**
  *
  * @author Dragos-Alexandru
@@ -17,6 +21,7 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
         this.rootFrame = rootFrame;
         
         initComponents();
+        
     }
 
     /**
@@ -29,12 +34,12 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         usernameField = new javax.swing.JTextField();
-        passwordField = new javax.swing.JTextField();
         loginButton = new javax.swing.JButton();
         registerButton = new javax.swing.JButton();
         username = new javax.swing.JLabel();
         password = new javax.swing.JLabel();
         backButton = new javax.swing.JButton();
+        passwordField = new javax.swing.JPasswordField();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(600, 400));
@@ -74,24 +79,23 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(142, Short.MAX_VALUE)
+                .addContainerGap(152, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(loginButton, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(username)
                     .addComponent(password))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(passwordField)
-                            .addComponent(usernameField, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(188, 188, 188))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(registerButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(registerButton, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
                         .addGap(18, 18, 18)
                         .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(138, 138, 138))))
+                        .addGap(138, 138, 138))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(passwordField)
+                            .addComponent(usernameField, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
+                        .addGap(188, 188, 188))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -102,8 +106,8 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
                     .addComponent(username))
                 .addGap(32, 32, 32)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(password))
+                    .addComponent(password)
+                    .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(40, 40, 40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(loginButton, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -118,16 +122,23 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_backButtonActionPerformed
     
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        if (!connectToMasterServer())
-            return;
-        rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
+        LoginWorker worker = new LoginWorker();
+        try {
+            if(worker.doInBackground()){
+                if (!connectToMasterServer())
+                    return;
+                rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
+            }
+        } catch (Exception ex) {
+            ConsoleFrame.showError(ex.getMessage());
+        }
     }//GEN-LAST:event_loginButtonActionPerformed
 
     private void registerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerButtonActionPerformed
         if (!connectToMasterServer())
             return;
     }//GEN-LAST:event_registerButtonActionPerformed
-
+    
     private boolean connectToMasterServer() {
         /*try {
             ConnectionHandler.getInstance().connectToMasterServer();
@@ -139,11 +150,50 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
         } */
         return true;
     }
+    
+    public class LoginWorker extends SwingWorker<Boolean, Object>{
+
+        @Override
+        protected Boolean doInBackground() throws Exception {
+            //This should start false
+            boolean succes = true;
+            String username = usernameField.getText();
+            String password = Guard.scramblePassword(String.valueOf(passwordField.getPassword()));
+            passwordField.setText("");
+            
+            if(checkUsername(username)){
+                rootFrame.login(username, password);
+                
+                /*Username and password are good, Alex, do your magic
+                here ->
+                
+                succes = ...
+                
+                <- to here
+                */
+            }
+            
+            return succes;
+        }
+        
+        private boolean checkUsername(String username){
+            char[] unacceptebleChars = {'\'','=','+',';','\"'};
+            for(char c:unacceptebleChars){
+                if(username.indexOf(c) >= 0){
+                    ConsoleFrame.showError("Username can't contain these characters: ' = + ; \" ");
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backButton;
     private javax.swing.JButton loginButton;
     private javax.swing.JLabel password;
-    private javax.swing.JTextField passwordField;
+    private javax.swing.JPasswordField passwordField;
     private javax.swing.JButton registerButton;
     private javax.swing.JLabel username;
     private javax.swing.JTextField usernameField;

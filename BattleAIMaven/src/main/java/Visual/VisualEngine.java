@@ -1,5 +1,6 @@
 package Visual;
 
+import Console.ConsoleFrame;
 import java.awt.Dimension;
 
 /**
@@ -90,6 +91,7 @@ public class VisualEngine extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         visualPanel1.animator.stopAnimation();   //stopping the animator when the window is closing
+        visualPanel1.bullets.clear();
         instance = null;    //the form's close operation is DISPOSE, so there's no point in keeping the old instance around
     }//GEN-LAST:event_formWindowClosing
 
