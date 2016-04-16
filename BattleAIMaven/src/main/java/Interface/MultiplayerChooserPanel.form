@@ -37,7 +37,7 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" pref="245" max="-2" attributes="0"/>
-                          <Component id="backButton" min="-2" pref="111" max="-2" attributes="0"/>
+                          <Component id="backButton" min="-2" pref="114" max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>

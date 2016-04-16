@@ -13,10 +13,11 @@ import javax.swing.SwingWorker;
  */
 public class MultiplayerCreateMatch extends javax.swing.JPanel {
 
-    private MainFrame rootFrame;
+    private final MainFrame rootFrame;
     
     /**
      * Creates new form MultiplayerCreateMatch
+     * @param rootFrame
      */
     public MultiplayerCreateMatch(MainFrame rootFrame) {
         initComponents();

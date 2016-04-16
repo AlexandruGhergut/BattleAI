@@ -8,7 +8,11 @@ Without this configuration present, some functionality in the IDE may be limited
 -->
     <config-data xmlns="http://www.netbeans.org/ns/maven-config-data/1">
         <configurations>
-            <configuration id="server" profiles=""/>
+            <configuration id="server" profiles="">
+                <property name="s"/>
+            </configuration>
+            <configuration id="server_console" profiles=""/>
+            <configuration id="server_console_db" profiles=""/>
         </configurations>
     </config-data>
 </project-shared-configuration>

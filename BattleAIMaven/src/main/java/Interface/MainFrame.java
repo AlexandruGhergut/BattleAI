@@ -15,6 +15,10 @@ public class MainFrame extends JFrame implements FrameConstants{
     
     public static MainFrame instance;
     public String localServerName = null;
+    
+    
+    private boolean loggedIn = false;
+    
     /**
      * Frame-ul principal al programului
      */

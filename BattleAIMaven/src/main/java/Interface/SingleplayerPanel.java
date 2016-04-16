@@ -1,8 +1,15 @@
 package Interface;
 
+import Console.ConsoleFrame;
+import Constants.VisualConstants;
+import Editor.Source;
+import Editor.SourceManager;
 import Visual.VisualEngine;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 
 /**
@@ -12,6 +19,12 @@ import javax.swing.JPanel;
 public class SingleplayerPanel extends JPanel {
 
     private final MainFrame rootFrame;
+    
+    private final List<Source> sourceList;
+    private final List<Source> addedSourceList = new ArrayList<>();
+    private final DefaultListModel listModel = new DefaultListModel();
+    private final DefaultListModel addedListModel = new DefaultListModel();
+    
     /**
      * Creates new form SingleplayerPanel
      * @param rootFrame
@@ -20,6 +33,12 @@ public class SingleplayerPanel extends JPanel {
         
         this.rootFrame = rootFrame; 
         initComponents();
+        sourceList = SourceManager.getInstance().getSourceList();
+        for(Source source:sourceList){
+            listModel.addElement(source.toListString());
+        }
+        listAvailableScripts.setModel(listModel);
+        
     }
 
     /**
@@ -148,24 +167,34 @@ public class SingleplayerPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        // TODO add your handling code here:
+        for(int index:listAvailableScripts.getSelectedIndices()){
+            if(addedSourceList.size() > VisualConstants.MAX_TANK_NUMBER){
+                ConsoleFrame.showError("Can't add more than " + VisualConstants.MAX_TANK_NUMBER + " tanks");
+                break;
+            }
+            addedSourceList.add(sourceList.get(index));
+            addedListModel.addElement(listModel.get(index));
+        }
+        listChosenScripts.setModel(addedListModel);
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        // TODO add your handling code here:
+        List<Object> listaAux = new ArrayList<>();
+        List<Source> listaAux2 = new ArrayList<>();
+        for(int index:listChosenScripts.getSelectedIndices()){
+            listaAux.add(addedListModel.get(index));
+            listaAux2.add(addedSourceList.get(index));
+        }
+        for(Object aux:listaAux){
+            addedListModel.removeElement(aux);
+        }
+        for(Source auxSource:listaAux2){
+            addedSourceList.remove(auxSource);
+        }
+        listChosenScripts.setModel(addedListModel);
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void battleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_battleButtonActionPerformed
-      /*  Visual.VisualEngineWrapper visualEngine = Visual.VisualEngineWrapper.getInstance(rootFrame);
-        visualEngine.showEngine();    //show the visual engine
-        rootFrame.setVisible(false);
-        while(visualEngine.isRunning()){
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SingleplayerPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } */
         VisualEngine.getInstance().setVisible(true);
         rootFrame.setVisible(true);
     }//GEN-LAST:event_battleButtonActionPerformed

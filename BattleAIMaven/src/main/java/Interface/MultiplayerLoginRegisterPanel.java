@@ -156,7 +156,8 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
 
         @Override
         protected Boolean doInBackground() throws Exception {
-            boolean success = false;
+            //This should start false
+            boolean success = true;
             String username = usernameField.getText();
             String password = Guard.scramblePassword(String.valueOf(passwordField.getPassword()));
             passwordField.setText("");

@@ -37,6 +37,10 @@ public class Source implements Serializable{
         return author;
     }
     
+    public String toListString(){
+        return name+"/"+author;
+    }
+    
     @Override
     public String toString() {
         return "Source{" + "name=" + name + ", author=" + author + ", content=" + content + '}';
