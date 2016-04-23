@@ -1,5 +1,7 @@
 package Engine;
 
+import java.io.Serializable;
+
 import Constants.EngineConstants;
 import Constants.VisualConstants;
 import Visual.VisualPanel;
@@ -9,7 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.*;
 
-public class Tank extends GameEntity implements MovementInterface, TransformInterface, Drawable {    
+public class Tank extends GameEntity implements Serializable,MovementInterface, TransformInterface, Drawable {    
     protected Image tankSprite;
     protected String playerName;
     protected double life;

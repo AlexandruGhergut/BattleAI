@@ -1,5 +1,9 @@
 package Engine;
 
+import java.io.Serializable;
+
+
+>>>>>>> c9051eb5983ebf83e0479a6021d49412ee760d43
 import Constants.EngineConstants;
 import Constants.VisualConstants;
 import Visual.VisualPanel;
@@ -15,7 +19,9 @@ import java.awt.geom.*;
  *
  * A bullet class used by tank class to destroy enemies.
  */
-final public class Bullet extends GameEntity implements TransformInterface, Drawable{
+
+final public class Bullet extends GameEntity implements Serializable,TransformInterface, Drawable{
+
     Image bulletSprite ;
     
     public Bullet(int id, double xPos , double yPos ){
