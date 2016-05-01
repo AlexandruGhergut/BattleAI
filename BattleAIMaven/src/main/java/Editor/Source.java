@@ -24,7 +24,19 @@ public class Source implements Serializable{
         this.name = name;
         this.author = author;
     }
-
+    
+    public Source(String name, String author) {
+        String generatedContent = "package User_Sources;\n\n";
+        generatedContent += "   public class "+name+"{\n";
+        generatedContent += "       static { System.out.println(\"Hello "+author+"\"); }\n";
+        generatedContent += "       public "+name+"(){\n";
+        generatedContent += "           System.out.println(\"I have been instantieted\");\n";
+        generatedContent += "       }\n";
+        generatedContent += "   }\n";
+        this.content = generatedContent;
+        this.name = name;
+        this.author = author;
+    }
     public String getContent() {
         return content;
     }
@@ -35,6 +47,10 @@ public class Source implements Serializable{
 
     public String getAuthor() {
         return author;
+    }
+    
+    public String toListString(){
+        return name+"/"+author;
     }
     
     @Override

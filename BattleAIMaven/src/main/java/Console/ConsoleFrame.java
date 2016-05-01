@@ -1,6 +1,14 @@
 package Console;
 
+import Constants.ConsoleCommands;
+import Networking.Server.ServerDispatcher;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.text.DefaultCaret;
 
 /**
  *  Clasa singleton prin care se vor afisa toate mesajele importante ale serverului sau
@@ -20,12 +28,25 @@ public final class ConsoleFrame extends JFrame {
      */
     private ConsoleFrame() {
         initComponents();
-        printMessage("Console", "***Welcome to BattleAI Console***");
+        outputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        outputArea.setLineWrap(true);
+        DefaultCaret caret = (DefaultCaret)outputArea.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        printMessage("Console", "***Welcome to BattleAI Console***\n");
     }
     
     public static ConsoleFrame getInstance(){
         if(instance == null){
             instance = new ConsoleFrame();
+            
+            instance.inputField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if(e.getKeyChar() == 10){
+                    instance.sendButtonActionPerformed(null);
+                }
+            }
+            });
         }
         return instance;
     }
@@ -88,8 +109,40 @@ public final class ConsoleFrame extends JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        // TODO add your handling code here:
+        
+        String command = inputField.getText();
+        inputField.setText("");
+        parseCommand(command);
+        
     }//GEN-LAST:event_sendButtonActionPerformed
+    
+    private void parseCommand(String command){
+        if(command.startsWith("/")){
+            if(command.equals(ConsoleCommands.EXIT.getValue())){
+                this.printMessage("EXIT", "Closing server");
+                System.exit(0);
+            }else if(command.equals(ConsoleCommands.HELP.getValue())){
+                ConsoleCommands[] listCommands = ConsoleCommands.values();
+                for(ConsoleCommands commandHelp:listCommands){
+                    this.printMessage("HELP", commandHelp.getValue()+" | "+commandHelp.getCommentary());
+                }
+            }else if(command.equals(ConsoleCommands.CHECK_CONNECTION.getValue())){
+                List<String> activeMatches = getConnections();
+                if(activeMatches.isEmpty()){
+                    this.printMessage("CHECK_CONNECTIONS", "NONE");
+                }else{
+                    this.printMessage("CHECK_CONNECTIONS", activeMatches.toString());
+                }
+            }
+        }else{
+            this.printMessage(this.getClass().getSimpleName(), "Commands must start with /");
+        }
+    }
+    
+    private List<String> getConnections(){
+        List<String> connectionsIp = ServerDispatcher.getInstance().getLocalConnections();
+        return connectionsIp;
+    }
     
     /**
      *  Metoda sincronizata ce afiseaza un mesaj pe consola (Nestatica)
@@ -108,7 +161,6 @@ public final class ConsoleFrame extends JFrame {
      *  Metoda sincronizata ce afiseaza un mesaj pe consola (Statica)
      * @param className
      * @param message
-     * @param isMasterServer
      */
     public synchronized static void sendMessage(String className, String message){
         if(showConsole){
@@ -120,6 +172,10 @@ public final class ConsoleFrame extends JFrame {
     
     private synchronized static void sendMessageStandardOutput(String className, String message){
         System.out.println(" "+className+": "+message+"\n");
+    }
+    
+    public synchronized static void showError(String message){
+        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

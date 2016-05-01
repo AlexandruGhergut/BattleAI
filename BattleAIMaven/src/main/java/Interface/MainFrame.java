@@ -13,13 +13,20 @@ import javax.swing.JPanel;
  */
 public class MainFrame extends JFrame implements FrameConstants{
     
-    public static MainFrame instance;
+    private static MainFrame instance;
+    public String localServerName = null;
+    
+    
+    private boolean loggedIn = false;
     
     /**
      * Frame-ul principal al programului
      */
     private MainFrame(){
         super("BattleAI");
+    }
+    
+    private void setup(){
         this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
@@ -29,6 +36,8 @@ public class MainFrame extends JFrame implements FrameConstants{
     public static MainFrame getInstance(){
         if(instance == null){
             instance = new MainFrame();
+            instance.setup();
+            //need to tell the engine the window is closing);
             instance.addWindowListener(new WindowAdapter() {
 
                 @Override
@@ -40,7 +49,7 @@ public class MainFrame extends JFrame implements FrameConstants{
                     super.windowClosing(e);
                 }
 
-            });  //need to tell the engine the window is closing);
+            });
         }
         return instance;
     }

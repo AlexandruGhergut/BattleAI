@@ -1,12 +1,9 @@
 package Database;
 
+import Console.ConsoleFrame;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * DatabaseHandler is a singleton class, the instance of which handles the
  * database.
@@ -14,24 +11,38 @@ import java.util.logging.Logger;
 public class DatabaseHandler {
 
     // JDBC driver name and database URL
-    private static final String JDBC_Driver = "com.mysql.jdbc.Driver";
-    private static final String DB_URL = "jdbc:mysql://localhost/?autoReconnect=true&useSSL=true";
+
+    private final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    private final String DB_URL = "jdbc:mysql://localhost/?autoReconnect=true&useSSL=true";
 
     //  Database attributes
-    private static final String USER = "root";
-    private static final String PASS = "Hai_sa_programam";
-    private static final String dbName = "Test1";
+    private static String USER = "root";
+    private static String PASS = "";
+    private final String DB_NAME = "Test1"; 
 
     Connection conn;
-
-    private static DatabaseHandler instance = new DatabaseHandler();
-
+    
+    private static DatabaseHandler instance;
+    
+    public static DatabaseHandler getInstance(String USER, String PASS) {
+        if(instance == null){
+            instance = new DatabaseHandler(USER,PASS);
+        }
+        return instance;
+    } 
+    
     public static DatabaseHandler getInstance() {
+        if(instance == null){
+            instance = new DatabaseHandler(USER, PASS);
+        }
         return instance;
     }
 
-    private DatabaseHandler() {
-        if (createDatabase() == true) {
+    private DatabaseHandler(String USER, String PASS) {
+        this.USER = USER;
+        this.PASS = PASS;
+        
+        if (createDatabase() == true){
             createTables();
         }
     }
@@ -41,14 +52,16 @@ public class DatabaseHandler {
      */
     private void preliminaries() {
         try {
-            Class.forName(JDBC_Driver);
+            Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
         } catch (SQLException se) {
             // Handle errors for JDBC   
             se.printStackTrace();
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to find driver or some other sql error, please open sql(mysqld)");
         } catch (Exception e) {
             // Handle errors for Class.forName
             e.printStackTrace();
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to initializa local JDBC");
         }
     }
 
@@ -74,7 +87,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sql = "CREATE DATABASE " + dbName;
+            String sql = "CREATE DATABASE " + DB_NAME;
             stmt.executeUpdate(sql);
 
         } catch (SQLException sqlException) {
@@ -107,7 +120,8 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+
+            String sqlQuery = "USE "+ DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             //create PLAYER_DB
@@ -164,7 +178,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             sqlQuery = "SELECT name FROM PLAYER_DB"
@@ -203,7 +217,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             sqlQuery = "SELECT name FROM PLAYER_DB "
@@ -238,7 +252,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             sqlQuery = "SELECT no_points FROM PLAYER_DB "
@@ -274,7 +288,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             sqlQuery = "SELECT * FROM MATCHES_DB "
@@ -320,7 +334,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             sqlQuery = "SELECT * FROM MATCHES_DB "
@@ -364,7 +378,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sqlQuery = "USE " + dbName;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             sqlQuery = "SELECT * FROM MATCHES_DB"
@@ -409,7 +423,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sql = "USE " + dbName;
+            String sql = "USE " + DB_NAME;
             stmt.executeUpdate(sql);
 
             sql = "INSERT INTO PLAYER_DB "
@@ -439,7 +453,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sql = "USE " + dbName;
+            String sql = "USE " + DB_NAME;
             stmt.executeUpdate(sql);
 
             sql = "UPDATE PLAYER_DB"
@@ -470,7 +484,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sql = "USE " + dbName;
+            String sql = "USE " + DB_NAME;
             stmt.executeUpdate(sql);
 
             sql = "UPDATE PLAYER_DB"
@@ -502,7 +516,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sql = "USE " + dbName;
+            String sql = "USE " + DB_NAME;
             stmt.executeUpdate(sql);
 
             sql = "INSERT INTO MATCHES_DB "
@@ -543,7 +557,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-            String sql = "USE " + dbName;
+            String sql = "USE " + DB_NAME;
             stmt.executeUpdate(sql);
 
             sql = "INSERT INTO ATTEND "
@@ -561,135 +575,6 @@ public class DatabaseHandler {
                 if (stmt != null) {
                     conn.close();
                 }
-            } catch (SQLException se) {
-                closeConnection();
-            }
-        }
-    }
-
-    public void afisP() {
-        preliminaries();
-        Statement stmt = null;
-        ResultSet result = null;
-
-        try {
-            stmt = conn.createStatement();
-
-            String sqlQuery = "USE " + dbName;
-            stmt.executeUpdate(sqlQuery);
-
-            sqlQuery = "SELECT * FROM PLAYER_DB";
-            result = stmt.executeQuery(sqlQuery);
-
-            while (result.next()) {
-                //Retrieve by column name
-                String name = result.getString("name");
-                String pass = result.getString("password");
-                int noPoints = result.getInt("no_points");
-
-                //Display values
-                System.out.print("name: " + name);
-                System.out.print(", pass: " + pass);
-                System.out.println(", noPlayers: " + noPoints);
-            }
-
-        } catch (SQLException ex) {
-            closeConnection();
-            ex.printStackTrace();
-        } finally {
-            //finally block used to close resources
-            closeConnection();
-            try {
-                if (stmt != null) {
-                    conn.close();
-                }
-                result.close();
-            } catch (SQLException se) {
-                closeConnection();
-            }
-        }
-    }
-
-    public void afisM() {
-        preliminaries();
-        Statement stmt = null;
-        ResultSet result = null;
-
-        try {
-            stmt = conn.createStatement();
-
-            String sqlQuery = "USE " + dbName;
-            stmt.executeUpdate(sqlQuery);
-
-            sqlQuery = "SELECT * FROM MATCHES_DB ";
-            result = stmt.executeQuery(sqlQuery);
-
-            while (result.next()) {
-                //Retrieve by column name
-                int id = result.getInt("id_match");
-                String winner = result.getString("winner");
-                int noPlayers = result.getInt("no_players");
-                Double duration = result.getDouble("duration");
-
-                //Display values
-                System.out.print("id: " + id);
-                System.out.print(", winner: " + winner);
-                System.out.print(", noPlayers: " + noPlayers);
-                System.out.println(", duration: " + duration);
-            }
-
-        } catch (SQLException ex) {
-            closeConnection();
-            ex.printStackTrace();
-        } finally {
-            //finally block used to close resources
-            closeConnection();
-            try {
-                if (stmt != null) {
-                    conn.close();
-                }
-                result.close();
-            } catch (SQLException se) {
-                closeConnection();
-            }
-        }
-    }
-    
-    public void afisA() {
-        preliminaries();
-        Statement stmt = null;
-        ResultSet result = null;
-
-        try {
-            stmt = conn.createStatement();
-
-            String sqlQuery = "USE " + dbName;
-            stmt.executeUpdate(sqlQuery);
-
-            sqlQuery = "SELECT * FROM ATTEND ";
-            result = stmt.executeQuery(sqlQuery);
-
-            while (result.next()) {
-                //Retrieve by column name
-                int id = result.getInt("id_match");
-                String name = result.getString("player_name");
-
-                //Display values
-                System.out.print("id_match: " + id);
-                System.out.println(", player: " + name);
-            }
-
-        } catch (SQLException ex) {
-            closeConnection();
-            ex.printStackTrace();
-        } finally {
-            //finally block used to close resources
-            closeConnection();
-            try {
-                if (stmt != null) {
-                    conn.close();
-                }
-                result.close();
             } catch (SQLException se) {
                 closeConnection();
             }

@@ -1,25 +1,31 @@
 package Main;
 
 import Console.ConsoleFrame;
+import Constants.DatabaseConstants;
 import Constants.MasterServerConstants;
 import Interface.MainFrame;
-import Server.ServerDispatcher;
+import Networking.Server.ServerDispatcher;
 import java.awt.EventQueue;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 
 public class Main implements ApplicationState{
     
     public static ConsoleFrame console;
+    private static Boolean consoleReady = false;
     static MainFrame mainFrame;
+    private static String DB_USER;
+    private static String DB_PASS;
         
     public static void main(String[] args){
         System.out.println("---------------------------------------");
         System.out.println("            Started BattleAI           ");
         System.out.println("---------------------------------------\n");
         ConsoleFrame.showConsole = false;
-        ConsoleFrame.sendMessage(Main.class.getName(),"Deciding how to start application...");
+        ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Deciding how to start application...");
         final boolean showConsole;
         final boolean isServer;
 
@@ -28,7 +34,7 @@ public class Main implements ApplicationState{
                 case MASTER_SERVER_CONSOLE:
                 {
                     ConsoleFrame.showConsole = true;
-                    ConsoleFrame.sendMessage(Main.class.getName(),"Start as server with visible console");
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Start as server with visible console");
                     isServer = true;
                     showConsole = true;
                 }
@@ -36,14 +42,14 @@ public class Main implements ApplicationState{
                 case MASTER_SERVER_NO_CONSOLE:
                 {
                     ConsoleFrame.showConsole = false;
-                    ConsoleFrame.sendMessage(Main.class.getName(),"Start as server without visible console");
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Start as server without visible console");
                     isServer = true;
                     showConsole = false;
                 }break;
                 case CLIENT_CONSOLE:
                 {
                     ConsoleFrame.showConsole = true;
-                    ConsoleFrame.sendMessage(Main.class.getName(),"Start as client with visible console");
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Start as client with visible console");
                     isServer = false;
                     showConsole = true;
                 }
@@ -51,14 +57,22 @@ public class Main implements ApplicationState{
                 default:
                 {
                     ConsoleFrame.showConsole = false;
-                    ConsoleFrame.sendMessage(Main.class.getName(),"Start as client without visible console");
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Start as client without visible console");
                     isServer = false;
                     showConsole = false;
                 }
             }
+            if(args.length>1){
+                DB_USER = args[1];
+            }
+            if(args.length>2){
+                DB_PASS = args[2];
+            }else{
+                DB_PASS = "";
+            }
         }else{
             ConsoleFrame.showConsole = false;
-            ConsoleFrame.sendMessage(Main.class.getName(),"Start as client without visible console");
+            ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Start as client without visible console");
             showConsole = false;
             isServer = false;
         }
@@ -69,7 +83,7 @@ public class Main implements ApplicationState{
 
                 @Override
                 public void run() {
-                    ConsoleFrame.sendMessage(Main.class.getName(),"Initializing MainFrame");
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Initializing MainFrame");
                     mainFrame = MainFrame.getInstance();
                     mainFrame.setLocationRelativeTo(null);
                     mainFrame.setVisible(true);
@@ -83,24 +97,45 @@ public class Main implements ApplicationState{
 
                 @Override
                 public void run() {
-                    ConsoleFrame.sendMessage(Main.class.getName(),"Initializing ConsoleFrame");
-                    console = ConsoleFrame.getInstance();
-                    console.setLocation(100, 100);
-                    console.setVisible(true);
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Initializing ConsoleFrame");
+                    synchronized(consoleReady){
+                        console = ConsoleFrame.getInstance();
+                        console.setLocation(100, 100);
+                        console.setVisible(true);
+                        consoleReady = true;
+                    }
                 }
             });
-            while(console == null){
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            synchronized(consoleReady){
+                while(!consoleReady){
+                    try {
+                        consoleReady.wait(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Main.class.getSimpleName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
         
         if(isServer){
-            ConsoleFrame.sendMessage(Main.class.getName(),"Initializing ServerDispatcher");
-            ServerDispatcher.getInstance().start(MasterServerConstants.PORT, true, null);
+            if(DB_USER == null){
+                if(showConsole){
+                    DB_USER = JOptionPane.showInputDialog("Database Username:");
+                    DB_PASS = JOptionPane.showInputDialog("Database Password:");
+                }else{
+                    Scanner scanner = new Scanner(System.in);
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(), "Database Username:");
+                    DB_USER = scanner.nextLine();
+                    ConsoleFrame.sendMessage(Main.class.getSimpleName(), "Database Password:");
+                    DB_PASS = scanner.nextLine();
+                }
+            }
+            ConsoleFrame.sendMessage(Main.class.getSimpleName(), "Initializing Database with ('"+DB_USER + "' and '"+DB_PASS+"')");
+            Database.DatabaseHandler.getInstance(DB_USER,DB_PASS);
+            ConsoleFrame.sendMessage(Main.class.getSimpleName(), "Database ready");
+            ConsoleFrame.sendMessage(Main.class.getSimpleName(),"Initializing ServerDispatcher");
+            ServerDispatcher.getInstance().start(Constants.MasterServerConstants.PORT);
+            ConsoleFrame.sendMessage(Main.class.getSimpleName(),"ServerDispatcher ready");
         }
     }
 }

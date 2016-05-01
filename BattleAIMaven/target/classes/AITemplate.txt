@@ -1,9 +1,9 @@
-package Inteligence;
+package User_Sources;
 
 import Engine.Inteligence;
 import Engine.Tank; 
 
-public class InteligenceTemplate implements Inteligence{ 
+public class <name> implements Inteligence{ 
 
     public void run(){
         

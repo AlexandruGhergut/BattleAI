@@ -68,3 +68,4 @@ nbactions.xml
 build.xml
 manifest.mf
 /BattleAIMaven/target/
+/BattleAIMaven/nbactions-server_console_db.xml

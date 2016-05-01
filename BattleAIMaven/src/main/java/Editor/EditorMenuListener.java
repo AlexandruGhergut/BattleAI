@@ -12,18 +12,6 @@ import java.awt.event.MouseListener;
 public class EditorMenuListener implements MouseListener{
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
     public void mouseEntered(MouseEvent e) {
         Component menuItem = e.getComponent();
         menuItem.setBackground(Color.WHITE);
@@ -37,4 +25,13 @@ public class EditorMenuListener implements MouseListener{
         menuItem.setBackground(Color.BLACK);
         menuItem.setForeground(Color.WHITE);
     }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {}
+
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
 }

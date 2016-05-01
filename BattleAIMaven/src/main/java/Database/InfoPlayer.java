@@ -10,7 +10,7 @@ import java.util.List;
 public class InfoPlayer {
     private String userName;
     private Integer numberOfPoints;
-    private final static DatabaseHandler DB = DatabaseHandler.getInstance();
+    private final DatabaseHandler DB = DatabaseHandler.getInstance();
     
     public InfoPlayer(String name){
         this.userName = name;
@@ -23,7 +23,7 @@ public class InfoPlayer {
     }
     
     /**
-     * Return an object Player with userName - name and his number of points    
+     * Returns an object Player with userName - name and his number of points    
      * @param name - the user name
      */
     public InfoPlayer getObjectPlayer(String name){
@@ -61,7 +61,7 @@ public class InfoPlayer {
         DB.setNoOfPoints(this.userName, numberOfPoints);
     }
 
-    public String getUsernName() {
+    public String getUserName() {
         return userName;
     }
 
@@ -85,6 +85,11 @@ public class InfoPlayer {
         return DB.getLostMatches(Player.userName);
     }
     
+    /**
+     * 
+     * @param Player who want to change the password
+     * @param pass new password
+     */
     public void changePassword(InfoPlayer Player, String pass){
         DB.changePassword(Player.userName, pass);
     }

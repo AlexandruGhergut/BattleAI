@@ -1,14 +1,20 @@
 package Interface;
 
 import Client.ConnectionHandler;
-import Server.Match;
-import Server.RegularClientRequest;
-import Server.RegularRequestType;
+import Console.ConsoleFrame;
+import Networking.Requests.GetMatchList;
+import Networking.Server.Match;
+import Networking.Server.Player;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.SwingWorker;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 /**
  *
  * @author Dragos-Alexandru
@@ -16,7 +22,9 @@ import javax.swing.DefaultListModel;
 public class MultiplayerServerPanel extends javax.swing.JPanel {
 
     private final MainFrame rootFrame;
-    private int a = 0;
+    private volatile List<Match> activeMatches;
+    private int selected;
+    
     /**
      * Creates new form MultiplayerServerBrowser
      * @param rootFrame
@@ -26,6 +34,34 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
         this.rootFrame = rootFrame;
         
         initComponents();
+        
+        HelloMessage.setText("Hello "+Player.getInstance().getUsername());
+        
+        listAvailableMatches.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                selected = listAvailableMatches.getSelectedIndex();
+                
+                if (selected == -1) {
+                    listAvailableMatches.setSelectedIndex(0);
+                    selected = 0;
+                }
+                
+                DefaultListModel<String> dlm = new DefaultListModel<>();
+                
+                if (!activeMatches.isEmpty()) {
+                    Match selectedMatch = activeMatches.get(selected);
+                    players.setText("Players "+selectedMatch.getNumberOfPlayers()+ "/" + selectedMatch.getMaxNumberOfPlayers());
+               
+                    for(String player:selectedMatch.getPlayerList())
+                        dlm.addElement(player);
+                }
+                
+                listPlayers.setModel(dlm);
+            }
+        });
+        
+        refreshButtonActionPerformed(null);
     }
 
     /**
@@ -48,6 +84,7 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
         matches = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         refreshButton = new javax.swing.JButton();
+        HelloMessage = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(600, 400));
@@ -90,6 +127,7 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
         matches.setText("Matches");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel3.setText("Select server");
 
         refreshButton.setBackground(new java.awt.Color(255, 153, 51));
@@ -99,6 +137,10 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
                 refreshButtonActionPerformed(evt);
             }
         });
+
+        HelloMessage.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        HelloMessage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        HelloMessage.setText("Hello Local");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -120,7 +162,8 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
                             .addComponent(createMatchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(joinMatchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(HelloMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(36, 36, 36)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(scrollPlayers, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -131,10 +174,10 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
                         .addComponent(joinMatchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(createMatchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -142,7 +185,8 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
                         .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(47, 47, 47))
+                        .addGap(18, 18, 18)
+                        .addComponent(HelloMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(39, 39, 39)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -157,7 +201,17 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void joinMatchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_joinMatchButtonActionPerformed
-        rootFrame.changePanel(new MultiplayerMatchPanel(rootFrame));
+        Match selectedMatch = activeMatches.get(selected);
+        JoinWorker worker = new JoinWorker(selectedMatch);
+        try {
+            worker.execute();
+            boolean success = worker.get();
+            if(success){
+                rootFrame.changePanel(new MultiplayerMatchPanel(rootFrame, selectedMatch));
+            }
+        } catch (InterruptedException | ExecutionException ex) {
+            ConsoleFrame.showError("Failed to connect to match.");
+        }
     }//GEN-LAST:event_joinMatchButtonActionPerformed
 
     private void createMatchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createMatchButtonActionPerformed
@@ -169,28 +223,62 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_backButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        // TODO add your handling code here:
-        if (a == 1)
-            System.out.println("Ok");
-        DefaultListModel<String> dlm = new DefaultListModel<>();
-        try {
-            ConnectionHandler.getInstance().sendToMasterServer(new RegularClientRequest(RegularRequestType.GET_MATCH_LIST));
-            List<Match> activeMatches = (List<Match>)ConnectionHandler.getInstance().readFromMasterServer();
-            for (Match match: activeMatches)
-                dlm.addElement(match.getTitle());
-            listAvailableMatches.setModel(dlm);
-            
-        } catch (IOException ex) {
-            Logger.getLogger(MultiplayerServerPanel.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MultiplayerServerPanel.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        a++;
         
+        players.setText("Players");
+        listPlayers.setModel(new DefaultListModel<>());
+        
+        RefreshWorker worker = new RefreshWorker();
+        try {
+            DefaultListModel<String> dlm = new DefaultListModel<>();
+            worker.execute();
+            activeMatches = worker.get();
+            for(Match match: activeMatches)
+                dlm.addElement(match.toListMatch());
+            listAvailableMatches.setModel(dlm);
+        } catch (InterruptedException | ExecutionException ex) {
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to refresh match list");
+            ConsoleFrame.showError("Failed to refresh match list");
+        }
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+    private class JoinWorker extends SwingWorker<Boolean, Void>{
+
+        Match selectedMatch;
+        
+        private JoinWorker(Match selectedMatch){
+            this.selectedMatch = selectedMatch;
+        }
+        
+        @Override
+        protected Boolean doInBackground() throws Exception {
+            ConnectionHandler.getInstance().connectToMatch(selectedMatch);
+            return true;
+        }
+        
+    }
+    
+    
+    /**
+     * This worker gets the match list from the master server
+     */
+    public class RefreshWorker extends SwingWorker<List<Match>, Void>{
+
+        @Override
+        protected List<Match> doInBackground() throws Exception {
+            List<Match> matches = new LinkedList<>();
+            try {
+                ConnectionHandler.getInstance().sendToMasterServer(new GetMatchList());
+                matches = (List<Match>)ConnectionHandler.getInstance().readFromMasterServer();
+            } catch (IOException | ClassNotFoundException ex) {
+                Logger.getLogger(MultiplayerServerPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return matches;
+        }
+
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel HelloMessage;
     private javax.swing.JButton backButton;
     private javax.swing.JButton createMatchButton;
     private javax.swing.JLabel jLabel3;
