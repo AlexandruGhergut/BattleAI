@@ -40,9 +40,4 @@ public class MatchDatabase {
         }
     }
     
-    
-    public void afis(){
-        System.out.println("winner: " + winner);
-    }
-
 }

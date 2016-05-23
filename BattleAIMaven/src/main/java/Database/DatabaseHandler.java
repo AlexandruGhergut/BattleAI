@@ -17,8 +17,8 @@ public class DatabaseHandler {
 
     //  Database attributes
     private static String USER = "root";
-    private static String PASS = "";
-    private final String DB_NAME = "Test1"; 
+    private static String PASS = "Hai_sa_programam";
+    private final String DB_NAME = "Test3"; 
 
     Connection conn;
     
@@ -50,7 +50,7 @@ public class DatabaseHandler {
     /**
      * Register JDBC driver and open a connection
      */
-    private void preliminaries() {
+    private synchronized void preliminaries() {
         try {
             Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -65,7 +65,7 @@ public class DatabaseHandler {
         }
     }
 
-    private void closeConnection() {
+    private synchronized void closeConnection() {
         try {
             if (conn != null) {
                 conn.close();
@@ -170,20 +170,22 @@ public class DatabaseHandler {
      * Returns true if name exist in Database on column name, otherwise returns
      * false
      */
-    public Boolean findName(String name) {
+    public synchronized Boolean findName(String name) {
         preliminaries();
-        Statement stmt = null;
         ResultSet result = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
-
             String sqlQuery = "USE " + DB_NAME;
-            stmt.executeUpdate(sqlQuery);
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
             sqlQuery = "SELECT name FROM PLAYER_DB"
-                    + " WHERE name = '" + name + "'";
-            result = stmt.executeQuery(sqlQuery);
+                    + " WHERE name = ?";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            
+            result = preparedStmt.executeQuery();
 
             return (result.next() == true);
 
@@ -194,9 +196,9 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null) 
+                    preparedStmt.close();
+                
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -209,20 +211,23 @@ public class DatabaseHandler {
      * Returns true if name exist in Database on column name, and on the same
      * row, on column password is pass, otherwise returns false
      */
-    public Boolean findAccount(String name, String pass) {
+    public synchronized Boolean findAccount(String name, String pass) {
         preliminaries();
-        Statement stmt = null;
         ResultSet result = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
-
             String sqlQuery = "USE " + DB_NAME;
-            stmt.executeUpdate(sqlQuery);
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
             sqlQuery = "SELECT name FROM PLAYER_DB "
-                    + "WHERE name = '" + name + "' and password = '" + pass + "'";
-            result = stmt.executeQuery(sqlQuery);
+                    + "WHERE name = ? and password = ?";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            preparedStmt.setString(2, pass);
+            
+            result = preparedStmt.executeQuery();
 
             return (result.next() == true);
 
@@ -233,9 +238,9 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null) 
+                    preparedStmt.close();
+                
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -244,22 +249,24 @@ public class DatabaseHandler {
         return false;
     }
 
-    public int getNoOfPoints(String name) {
+    public synchronized int getNoOfPoints(String name) {
         preliminaries();
-        Statement stmt = null;
         ResultSet result = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
-
             String sqlQuery = "USE " + DB_NAME;
-            stmt.executeUpdate(sqlQuery);
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
             sqlQuery = "SELECT no_points FROM PLAYER_DB "
-                    + "WHERE name = '" + name + "'";
-            result = stmt.executeQuery(sqlQuery);
+                    + "WHERE name = ?";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            result = preparedStmt.executeQuery();
 
-            return result.getInt("no_point");
+            if(result.next())
+                return result.getInt(1);
 
         } catch (SQLException ex) {
             closeConnection();
@@ -268,9 +275,8 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -279,23 +285,22 @@ public class DatabaseHandler {
         return 0;
     }
 
-    public List<MatchDatabase> getMatches(String name) {
+    public synchronized List<MatchDatabase> getMatches(String name) {
         List<MatchDatabase> matches = new ArrayList<MatchDatabase>();
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
         ResultSet result = null;
 
         try {
-            stmt = conn.createStatement();
-
             String sqlQuery = "USE " + DB_NAME;
-            stmt.executeUpdate(sqlQuery);
-
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
             sqlQuery = "SELECT * FROM MATCHES_DB "
-                    + "WHERE id IN (SELECT id_match FROM ATTEND "
-                    + "WHERE player_name = '" + name + "'"
-                    + ")";
-            result = stmt.executeQuery(sqlQuery);
+                    + "WHERE id_match IN (SELECT id_match FROM ATTEND "
+                                        + "WHERE player_name = ?)";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            result = preparedStmt.executeQuery();
 
             while (result.next()) {
                 //Retrieve by column name
@@ -314,9 +319,8 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -325,21 +329,22 @@ public class DatabaseHandler {
         return matches;
     }
 
-    public List<MatchDatabase> getWonMatches(String name) {
+    public synchronized List<MatchDatabase> getWonMatches(String name) {
         List<MatchDatabase> matches = new ArrayList<MatchDatabase>();
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
         ResultSet result = null;
 
         try {
-            stmt = conn.createStatement();
-
             String sqlQuery = "USE " + DB_NAME;
-            stmt.executeUpdate(sqlQuery);
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
             sqlQuery = "SELECT * FROM MATCHES_DB "
-                    + "WHERE winner = '" + name + "'";
-            result = stmt.executeQuery(sqlQuery);
+                    + "WHERE winner = ?";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            result = preparedStmt.executeQuery();
 
             while (result.next()) {
                 //Retrieve by column name
@@ -358,9 +363,8 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -369,24 +373,24 @@ public class DatabaseHandler {
         return matches;
     }
 
-    public List<MatchDatabase> getLostMatches(String name) {
+    public synchronized List<MatchDatabase> getLostMatches(String name) {
         List<MatchDatabase> matches = new ArrayList<MatchDatabase>();
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
         ResultSet result = null;
 
         try {
-            stmt = conn.createStatement();
-
             String sqlQuery = "USE " + DB_NAME;
-            stmt.executeUpdate(sqlQuery);
-
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
             sqlQuery = "SELECT * FROM MATCHES_DB"
-                    + " WHERE winner in not " + name
-                    + " and id IN (SELECT id_match FROM ATTEND"
-                    + " WHERE player_name = '" + name + "'"
-                    + ")";
-            result = stmt.executeQuery(sqlQuery);
+                    + " WHERE winner != ?" 
+                    + " and id_match IN (SELECT id_match FROM ATTEND"
+                                + " WHERE player_name = ?)";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            preparedStmt.setString(2, name);
+            result = preparedStmt.executeQuery();
 
             while (result.next()) {
                 //Retrieve by column name
@@ -405,9 +409,8 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -416,19 +419,21 @@ public class DatabaseHandler {
         return matches;
     }
 
-    public void pushPlayer(String name, String pass) {
+    public synchronized void pushPlayer(String name, String pass) {
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
+            String sqlQuery = "USE " + DB_NAME;
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
-            String sql = "USE " + DB_NAME;
-            stmt.executeUpdate(sql);
-
-            sql = "INSERT INTO PLAYER_DB "
-                    + "VALUES ('" + name + "', '" + pass + "' , 0)";
-            stmt.executeUpdate(sql);
+            sqlQuery = "INSERT INTO PLAYER_DB "
+                    + "VALUES (?, ? , 0)";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, name);
+            preparedStmt.setString(2, pass);
+            preparedStmt.executeUpdate();
 
         } catch (SQLException ex) {
             closeConnection();
@@ -437,29 +442,30 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
             } catch (SQLException se) {
                 closeConnection();
             }
         }
     }
 
-    public void setNoOfPoints(String userName, Integer numberOfPoints) {
+    public synchronized void setNoOfPoints(String userName, Integer numberOfPoints) {
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
+            String sqlQuery = "USE " + DB_NAME;
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
-            String sql = "USE " + DB_NAME;
-            stmt.executeUpdate(sql);
-
-            sql = "UPDATE PLAYER_DB"
-                    + " SET no_points = " + numberOfPoints
-                    + " WHERE name = '" + userName + "'";
-            stmt.executeUpdate(sql);
+            sqlQuery = "UPDATE PLAYER_DB"
+                    + " SET no_points = ?"
+                    + " WHERE name = ?";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setInt(1, numberOfPoints);
+            preparedStmt.setString(2, userName);
+            preparedStmt.executeUpdate();
 
         } catch (SQLException ex) {
             closeConnection();
@@ -468,29 +474,30 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
             } catch (SQLException se) {
                 closeConnection();
             }
         }
     }
 
-    public void changePassword(String userName, String pass) {
+    public synchronized void changePassword(String userName, String pass) {
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
+            String sqlQuery = "USE " + DB_NAME;
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
-            String sql = "USE " + DB_NAME;
-            stmt.executeUpdate(sql);
-
-            sql = "UPDATE PLAYER_DB"
-                    + " SET password = '" + pass + "'"
-                    + " WHERE name = '" + userName + "'";
-            stmt.executeUpdate(sql);
+            sqlQuery = "UPDATE PLAYER_DB"
+                    + " SET password = ?"
+                    + " WHERE name = ?";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setString(1, pass);
+            preparedStmt.setString(2, userName);
+            preparedStmt.executeUpdate();
 
         } catch (SQLException ex) {
             closeConnection();
@@ -499,34 +506,38 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
             } catch (SQLException se) {
                 closeConnection();
             }
         }
     }
 
-    public int pushMatch(MatchDatabase Match) {
+    /**
+     * 
+     * @return the primary key of the match that has just been inserted into the table
+     */
+    public synchronized int pushMatch(MatchDatabase Match) {
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
         ResultSet result = null;
 
         try {
-            stmt = conn.createStatement();
+            String sqlQuery = "USE " + DB_NAME;
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
-            String sql = "USE " + DB_NAME;
-            stmt.executeUpdate(sql);
+            sqlQuery = "INSERT INTO MATCHES_DB "
+                    + "VALUES (NULL, ? , ?, ?)";
+            preparedStmt = conn.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
+            preparedStmt.setString(1, Match.getWinner());
+            preparedStmt.setInt(2, Match.getNoPlayers());
+            preparedStmt.setDouble(3, Match.getDuration());
+            
+            preparedStmt.executeUpdate();
 
-            sql = "INSERT INTO MATCHES_DB "
-                    + "VALUES (NULL,'" + Match.getWinner() + "', "
-                    + Match.getNoPlayers() + ", "
-                    + Match.getDuration()
-                    + ")";
-            stmt.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);// ma omoara ea ma omoara ea... eroareaaaa
-
-            result = stmt.getGeneratedKeys();
+            result = preparedStmt.getGeneratedKeys();
 
             if (result.next()) {
                 return result.getInt(1);
@@ -539,9 +550,8 @@ public class DatabaseHandler {
             //finally block used to close resources
             closeConnection();
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
                 result.close();
             } catch (SQLException se) {
                 closeConnection();
@@ -550,19 +560,22 @@ public class DatabaseHandler {
         return -1;
     }
 
-    public void pushAttend(int idMatch, String player) {
+    public synchronized void pushAttend(int idMatch, String player) {
         preliminaries();
-        Statement stmt = null;
+        PreparedStatement preparedStmt = null;
 
         try {
-            stmt = conn.createStatement();
+            String sqlQuery = "USE " + DB_NAME;
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.executeUpdate();
 
-            String sql = "USE " + DB_NAME;
-            stmt.executeUpdate(sql);
+            sqlQuery = "INSERT INTO ATTEND "
+                    + "VALUES (?, ?)";
+            preparedStmt = conn.prepareStatement(sqlQuery);
+            preparedStmt.setInt(1, idMatch);
+            preparedStmt.setString(2, player);
+            preparedStmt.executeUpdate();
 
-            sql = "INSERT INTO ATTEND "
-                    + "VALUES (" + idMatch + ", '" + player + "')";
-            stmt.executeUpdate(sql);
 
             closeConnection();
 
@@ -572,9 +585,8 @@ public class DatabaseHandler {
         } finally {
             //finally block used to close resources
             try {
-                if (stmt != null) {
-                    conn.close();
-                }
+                if (preparedStmt != null)
+                    preparedStmt.close();
             } catch (SQLException se) {
                 closeConnection();
             }
