@@ -55,15 +55,8 @@ public class RegularConnection extends Connection {
                 
                 // close connection if inactivity level has reached maximum
                 if (inactivityLevel.get() == MAX_INACTIVITY_LEVEL) {
-                    threadRunning = false;
-                    activeConnection = false;
+                    closeConnection();
                     connectionHandler.cancel();
-                    
-                    try {
-                        clientSocket.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(RegularConnection.class.getName()).log(Level.SEVERE, null, ex);
-                    }
                 }
                 else
                     inactivityLevel.incrementAndGet();
@@ -76,12 +69,12 @@ public class RegularConnection extends Connection {
     
     @Override
     public void run() {
-        threadRunning = true;
+        threadRunning.set(true);
         startConnectionHandler();
         
         Object object = null;
         
-        while (threadRunning) {
+        while (threadRunning.get()) {
             try {
 
                 if (!clientSocket.isInputShutdown()) {
@@ -98,14 +91,13 @@ public class RegularConnection extends Connection {
                         Match match = ((HostMatch)request).getMatch();
                         switchedConnection = true;
                         ServerDispatcher.getInstance().addConnection(new MatchConnection(clientSocket, inputStream, outputStream, match));
-                        threadRunning = false;
-                        activeConnection = false;
+                        threadRunning.set(false);
+                        activeConnection.set(false);
                     }
                 }
             } catch (ClassNotFoundException | IOException ex) {
                 Logger.getLogger(MatchConnection.class.getName()).log(Level.SEVERE, null, ex);
-                threadRunning = false;
-                activeConnection = false;
+                closeConnection();
             }
         }
     }

@@ -1,9 +1,10 @@
 package Networking.Server;
 
-import Client.ConnectionHandler;
+import Networking.Client.ConnectionHandler;
 import Constants.MasterServerConstants;
 import Editor.Source;
 import Networking.Requests.HostMatch;
+import Networking.Requests.PlayerConnect;
 import Networking.Requests.RegisterActivity;
 import Networking.Requests.Request;
 import java.io.IOException;
@@ -48,9 +49,8 @@ public class ClientServerDispatcher extends ServerDispatcher {
             
             @Override
             public void run() {
-                if (!isRunning) {
-                    this.cancel();
-                    System.out.println("Cancelling");
+                if (!isRunning.get()) {
+                    masterServerNotifier.cancel();
                     return;
                 }
                 
@@ -63,7 +63,7 @@ public class ClientServerDispatcher extends ServerDispatcher {
                     // Confirm activity
                     ConnectionHandler.getInstance().sendToMasterServer(new RegisterActivity());
                 } catch (IOException ex) {
-                    this.cancel();
+                    masterServerNotifier.cancel();
                     Logger.getLogger(ClientServerDispatcher.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
@@ -93,7 +93,7 @@ public class ClientServerDispatcher extends ServerDispatcher {
      */
     @Override
     protected void listenForConnections(ServerSocket serverSocket) {
-        while (isRunning) {
+        while (isRunning.get()) {
             try {
                 Socket clientSocket = serverSocket.accept();
                 PlayerConnection playerConnection = new PlayerConnection(clientSocket);
@@ -123,6 +123,21 @@ public class ClientServerDispatcher extends ServerDispatcher {
             } catch (IOException ex) {
                 Logger.getLogger(ClientServerDispatcher.class.getName()).log(Level.SEVERE, null, ex);
             }
+    }
+    
+    /** Send a request to all clients connected to this match except the host.
+     * @param request The request which will be broadcasted to all connected players.
+     */
+    public synchronized void broadcastToAllExceptHost(Request request) {
+        for (Connection i: activeConnections)
+            if (!((PlayerConnection)i).getUsername().equals(Player.getInstance().getUsername()))
+                try {
+                    i.getOutputStream().reset();
+                    i.getOutputStream().writeObject(request);
+                    i.getOutputStream().flush();
+                } catch (IOException ex) {
+                    Logger.getLogger(ClientServerDispatcher.class.getName()).log(Level.SEVERE, null, ex);
+                }
     }
     
     /**

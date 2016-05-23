@@ -1,6 +1,6 @@
 package Interface;
 
-import Client.ConnectionHandler;
+import Networking.Client.ConnectionHandler;
 import Console.ConsoleFrame;
 import Networking.Requests.BooleanResponse;
 import Networking.Requests.LoginAccount;

@@ -1,6 +1,6 @@
 package Networking.Requests;
 
-import Client.ConnectionHandler;
+import Networking.Client.ConnectionHandler;
 import Networking.Server.ClientServerDispatcher;
 import Networking.Server.Match;
 import java.io.IOException;

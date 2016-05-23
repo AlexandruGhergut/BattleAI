@@ -1,6 +1,6 @@
 package Interface;
 
-import Client.ConnectionHandler;
+import Networking.Client.ConnectionHandler;
 import Console.ConsoleFrame;
 import Editor.Source;
 import Editor.SourceManager;
@@ -10,6 +10,7 @@ import Networking.Requests.RemovePlayer;
 import Networking.Requests.Request;
 import Networking.Requests.RequestType;
 import Networking.Requests.SourceFileTransfer;
+import Networking.Requests.StartBattle;
 import Networking.Server.ClientServerDispatcher;
 import Networking.Server.Match;
 import Networking.Server.Player;
@@ -291,25 +292,29 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_readyButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
-        
+
         // Check if the user has selected a source file
-        String username = Player.getInstance().getUsername();
-        AbstractMap playersSourcesMap = ClientServerDispatcher.getInstance().getSourceFilesMap();
-        if (playersSourcesMap.get(username) == null) {
-            ConsoleFrame.showError("You must select a source file for your robot.");
-            return;
-        }
-        
-        if (ConnectionHandler.getInstance().isHost()) {
+        if (ConnectionHandler.getInstance().isHost()) 
+        {
+            String username = Player.getInstance().getUsername();
+            AbstractMap playersSourcesMap = ClientServerDispatcher.getInstance().getSourceFilesMap();
+            if (playersSourcesMap.get(username) == null) {
+                ConsoleFrame.showError("You must select a source file for your robot.");
+                return;
+            }
+
+   
             int playersCount = ClientServerDispatcher.getInstance()
                     .getActiveMatch().getNumberOfPlayers();
-            
+
             // Check if all players have selected a source file
             if (playersSourcesMap.size() != playersCount) {
                 ConsoleFrame.showError("There are still players with no source file selected.");
                 return;
             }
-            
+
+            ClientServerDispatcher.getInstance().broadcastToAllExceptHost(new StartBattle());
+
             setWorkerStatus(false);
             List<Source> playersSources = new LinkedList(playersSourcesMap.values());
             VisualEngine.getInstance(playersSources).setVisible(true);
@@ -375,6 +380,10 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                         break;
                                     case RequestType.REMOVE_PLAYER:
                                         playerSelectionModel.removeElement(((RemovePlayer)request).getUsername());
+                                        break;
+                                    case RequestType.START_BATTLE:
+                                        VisualEngine.getInstance().setVisible(true);
+                                        setWorkerStatus(false);
                                         break;
                                     default:
                                         break;
