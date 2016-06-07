@@ -1,4 +1,8 @@
 language: java
 jdk:
-  - oraclejdk8
-before_script: cd BattleAIMaven
+    - oraclejdk8
+services:
+    - mysql
+before_script: 
+    - mysql -e 'CREATE DATABASE Test3;'
+    - cd BattleAIMaven

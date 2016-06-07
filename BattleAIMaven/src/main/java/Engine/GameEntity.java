@@ -1,8 +1,16 @@
 package Engine;
 
+import Console.ConsoleFrame;
 import java.awt.geom.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * Game Entity class provides a framework for Bullet,Cannon and Tank classes
  * the methods implemented in this class should work for normal 'X'-'Y' Cartesian  coordinate system so they would probably need to be altered to work with
@@ -156,6 +164,31 @@ public abstract class GameEntity implements TransformInterface, Serializable {
     public Rectangle2D.Double getRectangle(){
         return new Rectangle2D.Double(x,y,width,height);
     }
+    
+    /**
+     * Creates a deep clone using serialization.
+     * @return A deep clone of the current object.
+     */
+    public GameEntity deepClone(){
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            
+            oos.writeObject(this);
+            
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            
+            return (GameEntity) ois.readObject();
+        } catch (IOException ex) {
+            ConsoleFrame.sendMessage("GameEntity: ", ex.getMessage());
+        } catch (ClassNotFoundException ex) {
+            ConsoleFrame.sendMessage("GameEntity: ", ex.getMessage());
+        }
+        
+        return null;
+    }
+    
     @Override
     public String toString() {
         return "GameEntity{" + "id=" + id + ", transformation=" + transformation + ", x=" + x + ", y=" + y + ", angle=" + angle + ", speed=" + speed + ", damage=" + damage + '}';

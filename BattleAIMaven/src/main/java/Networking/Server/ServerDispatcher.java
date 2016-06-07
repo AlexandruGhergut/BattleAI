@@ -25,11 +25,10 @@ public class ServerDispatcher implements Runnable {
     protected AtomicBoolean isRunning;
     protected Thread mainThread;
     protected int port;
-    protected final ExecutorService THREAD_POOL;
+    protected ExecutorService THREAD_POOL;
     protected ServerSocket serverSocket;
     
     protected ServerDispatcher() {
-        THREAD_POOL = Executors.newCachedThreadPool();
         isRunning = new AtomicBoolean(false);
     }
     
@@ -46,6 +45,7 @@ public class ServerDispatcher implements Runnable {
                 Logger.getLogger(ServerDispatcher.class.getName()).log(Level.SEVERE, null, ex);
                 return false;
             }
+            THREAD_POOL = Executors.newCachedThreadPool();
             mainThread = new Thread(this);
             isRunning.set(true);
             mainThread.start();

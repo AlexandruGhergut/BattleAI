@@ -11,6 +11,7 @@ import Main.GameModes;
 import Networking.Client.ConnectionHandler;
 import Networking.Requests.EntityUpdateRequest;
 import Networking.Server.ClientServerDispatcher;
+import Networking.Server.PacketManager;
 import Visual.VisualEngine;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,16 +137,21 @@ public class IntelligenceControlThread extends Thread{
         bulletUpdater.start();
         
         while(running) {
-            //OFF FOR NOW
+            
             synchronized (GameEntity.entityList) {
-                for (int i = 0; i < tankThreads.size(); i++) {
+                //OLD WAY
+                /*    for (int i = 0; i < tankThreads.size(); i++) {
                     if (semaphores.get(i).isGreen()) {
                         EntityUpdateRequest eur = new EntityUpdateRequest(GameEntity.entityList);
                         ClientServerDispatcher.getInstance().broadcastToAllExceptHost(eur);
                     }
                 }
+                 */
+                
+                    PacketManager.getInstance().addFrame(GameEntity.entityList);    //send the current frame
+                
             }
-        
+            
             for(int i = 0; i < tankThreads.size(); i++){
                 synchronized (semaphores.get(i)) {
                     if (semaphores.get(i).isGreen()) {

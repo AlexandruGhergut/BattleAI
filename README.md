@@ -1,6 +1,6 @@
 # BattleAI
 
-<p> BattleAi is a game where players can write Java programs to control a single robot and then use it to battle other
+<p> BattleAI is a game where players can write Java programs to control a single robot and then use it to battle other
 players (computer or human). <p>
 
 <h2> Instructions </h2>

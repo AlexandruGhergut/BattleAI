@@ -37,6 +37,8 @@ public class ConnectionHandler {
     private ObjectOutputStream matchOutputStream;
     
     private boolean host;
+    // this variable indicated where the disconnect was voluntary
+    private boolean disconnectedFromMatch;
     
     public boolean isHost() {
         return host;
@@ -46,7 +48,7 @@ public class ConnectionHandler {
         masterServerSocket = null;
         matchSocket = null;
         host = false;
-        
+        disconnectedFromMatch = false;
         matchSocket = null;
     };
     
@@ -159,12 +161,14 @@ public class ConnectionHandler {
                 } catch (IOException ex) {
                     t.cancel();
                     
-                    if (!host) {
+                    if (!host && !disconnectedFromMatch) {
                         MainFrame.getInstance()
                                 .changePanel(new MultiplayerServerPanel(MainFrame.getInstance()));
                         ConsoleFrame.showError("Connection lost.");
-                    } else
+                    } else {
                         host = false;
+                        disconnectedFromMatch = false;
+                    }
                 }
                 System.out.println("Send acknowledgement");
             }
@@ -175,9 +179,14 @@ public class ConnectionHandler {
     public void disconnectFromMatch() {
         try {
             matchSocket.close();
-            //masterServerSocket.close();
+            disconnectedFromMatch = true;
             if (host) {
                 ClientServerDispatcher.getInstance().stop();
+                /* the server does not disappear almost immediately from the 
+                   server-browser after it is closed. The workaround is to close
+                   the master-server socket when closing the server. The issue
+                   should be further investigated */
+                masterServerSocket.close();
             }
         } catch (IOException ex) {
             Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);

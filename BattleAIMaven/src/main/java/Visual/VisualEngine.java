@@ -61,9 +61,11 @@ public class VisualEngine extends javax.swing.JFrame {
     
     public void updateEntityList(ArrayList<GameEntity> newList){
         visualPanel1.entityList = newList;
+        /*
         if(matchMode == GameModes.MULTIPLAYER_HOST){
             ClientServerDispatcher.getInstance().broadcastToAllExceptHost(new EntityUpdateRequest(newList));
         }
+        */
     }
     
     public void setMatchMode(GameModes matchMode){

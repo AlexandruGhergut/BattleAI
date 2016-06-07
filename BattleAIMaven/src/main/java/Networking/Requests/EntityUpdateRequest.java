@@ -1,15 +1,14 @@
 package Networking.Requests;
 
-import Engine.GameEntity;
+import Networking.Server.Packet;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 
 public class EntityUpdateRequest extends Request {
-    public ArrayList<GameEntity> gameEntities;
+    public Packet packet;
     
-    public EntityUpdateRequest(ArrayList<GameEntity> entities) {
+    public EntityUpdateRequest(Packet toSend) {
         super(RequestType.ENTITIY_UPDATE);
-        gameEntities = entities;
+        packet = toSend;
     }
     
     @Override
