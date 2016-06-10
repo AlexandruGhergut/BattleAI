@@ -1,7 +1,6 @@
 package Networking.Server;
 
 import Networking.Client.ConnectionHandler;
-import Console.ConsoleFrame;
 import Constants.MasterServerConstants;
 import Networking.Requests.PlayerConnect;
 import Networking.Requests.Request;

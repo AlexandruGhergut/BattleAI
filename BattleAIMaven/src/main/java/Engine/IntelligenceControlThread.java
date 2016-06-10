@@ -22,7 +22,7 @@ public class IntelligenceControlThread extends Thread{
     
     public IntelligenceControlThread(List<Source> surse){
         numberOfTanks = surse.size();
-        
+    
         GameEntity.entityList.clear();
         GameEntity.currentIndex = 0;
         
@@ -67,25 +67,25 @@ public class IntelligenceControlThread extends Thread{
         
         while(running) {
             
-            synchronized (GameEntity.entityList) {        
+            synchronized (GameEntity.entityList) {
                     PacketManager.getInstance().addFrame(GameEntity.entityList);    //send the current frame     
-            }
-            
+                    }
+        
             for(int i = 0; i < tankThreads.size(); i++){
                 synchronized (semaphores.get(i)) {
                     if (semaphores.get(i).isGreen()) {
                         if (((Tank) GameEntity.entityList.get(i)).inTheGame()) {
-                            //to ensure that the enemy is always detected
-                            ((Tank) GameEntity.entityList.get(i)).rotate(0.1);
-                            ((Tank) GameEntity.entityList.get(i)).rotate(-0.1);
-                            //end
-                            semaphores.get(i).goRed();
-                            semaphores.get(i).notify();
-                        }
+                        //to ensure that the enemy is always detected
+                        ((Tank)GameEntity.entityList.get(i)).rotate(0.1);
+                        ((Tank)GameEntity.entityList.get(i)).rotate(-0.1);
+                        //end
+                        semaphores.get(i).goRed();
+                        semaphores.get(i).notify();
+                    }
                         else{
                             tankThreads.get(i).stopNicely();
-                        }
-                    }
+                }
+            }
                 }
             }
             

@@ -1,11 +1,9 @@
 package Visual;
 
-import Constants.VisualConstants;
 import Editor.Source;
 import Engine.GameEntity;
 import Engine.IntelligenceControlThread;
 import Main.GameModes;
-import Networking.Client.ConnectionHandler;
 import Networking.Requests.EntityUpdateRequest;
 import Networking.Server.ClientServerDispatcher;
 import java.awt.Dimension;

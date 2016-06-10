@@ -1,6 +1,5 @@
 package Networking.Server;
 
-import Console.ConsoleFrame;
 import Constants.MasterServerConstants;
 import Networking.Requests.AddPlayer;
 import Networking.Requests.RemovePlayer;

@@ -7,7 +7,12 @@ import Interface.MainFrame;
 import Networking.Server.Player;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.event.InputMethodEvent;
+import java.awt.event.InputMethodListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -43,6 +48,7 @@ public final class Editor extends JFrame {
     private final JMenuItem openButton;
     private final JMenuItem saveButton;
     private final JMenuItem compileButton;
+    private final JMenuItem backButton;
     
     private String inteligenceTemplate;
     private final RSyntaxTextArea sourceArea;
@@ -52,6 +58,8 @@ public final class Editor extends JFrame {
     private final JPanel sourcePanel;
     
     private static String sourceName;
+    
+    private boolean saved = false;
     
     /**
      * 
@@ -76,6 +84,7 @@ public final class Editor extends JFrame {
         sourceArea.setMarkOccurrences(true);
         sourceArea.setActiveLineRange(3, 10);
         sourceArea.setBorder(new BorderUIResource.LineBorderUIResource(Color.white, 4));
+        sourceArea.addKeyListener(new InputKeyListener());
         
         
         scrollSourceArea = new JScrollPane();
@@ -95,27 +104,35 @@ public final class Editor extends JFrame {
         
         sourcePanel = new JPanel(new GridLayout(2,1));
         
-        EditorMenuListener editorMenuListener = new EditorMenuListener();
-        
         newButton = new JMenuItem("New");
         newButton.setBackground(Color.BLACK);
         newButton.setForeground(Color.WHITE);
-        newButton.addMouseListener(new EditorNewListener());
+        newButton.addMouseListener(new EditorNewListener(this));
+        newButton.setName("newButton");
         
         openButton = new JMenuItem("Open");
         openButton.setBackground(Color.BLACK);
         openButton.setForeground(Color.WHITE);
-        openButton.addMouseListener(new EditorOpenListener());
+        openButton.addMouseListener(new EditorOpenListener(this));
+        openButton.setName("openButton");
         
         saveButton = new JMenuItem("Save");
         saveButton.setBackground(Color.BLACK);
-        saveButton.setForeground(Color.WHITE);
-        saveButton.addMouseListener(new EditorSaveListener());
+        saveButton.setForeground(Color.RED);
+        saveButton.addMouseListener(new EditorSaveListener(this));
+        saveButton.setName("saveButton");
         
         compileButton = new JMenuItem("Compile");
         compileButton.setBackground(Color.BLACK);
         compileButton.setForeground(Color.WHITE);
-        compileButton.addMouseListener(new EditorCompileListener());
+        compileButton.addMouseListener(new EditorCompileListener(this));
+        compileButton.setName("compileButton");
+        
+        backButton = new JMenuItem("Back");
+        backButton.setBackground(Color.BLACK);
+        backButton.setForeground(Color.WHITE);
+        backButton.addMouseListener(new EditorBackListener(this));
+        backButton.setName("backButton");
         
         menuBar = new JMenuBar();
         menuBar.setLayout(new GridLayout(1,4));
@@ -125,6 +142,7 @@ public final class Editor extends JFrame {
         menuBar.add(openButton);
         menuBar.add(saveButton);
         menuBar.add(compileButton);
+        menuBar.add(backButton);
         
         start();
     }
@@ -146,7 +164,7 @@ public final class Editor extends JFrame {
             public void windowClosing(WindowEvent e){
                 super.windowClosing(e);
                 frame.setVisible(true);
-        }
+            }
         });
         
         this.add(menuBar, BorderLayout.NORTH);
@@ -163,12 +181,16 @@ public final class Editor extends JFrame {
     
     private final class EditorNewListener extends EditorMenuListener{
         
+        public EditorNewListener(Editor parent){
+            super(parent);
+        }
+        
         @Override
         public void mouseClicked(MouseEvent e) {
             String inteligenceTemplate = SourceManager.getInstance().getIntelligenceTemplate();
             sourceName = JOptionPane.showInputDialog("Source name: ", "LocalSource");
 
-            inteligenceTemplate = inteligenceTemplate.replaceFirst("<name>", sourceName);
+            inteligenceTemplate = inteligenceTemplate.replaceAll("<name>", sourceName);
 
             sourceArea.setText("");
 
@@ -177,6 +199,10 @@ public final class Editor extends JFrame {
     }
     private final class EditorOpenListener extends EditorMenuListener{
 
+        public EditorOpenListener(Editor parent){
+            super(parent);
+        }
+        
         @Override
         public void mouseClicked(MouseEvent e) {
             
@@ -230,22 +256,52 @@ public final class Editor extends JFrame {
     }
     private final class EditorSaveListener extends EditorMenuListener{
         
+        public EditorSaveListener(Editor parent){
+            super(parent);
+        }
+        
         @Override
         public void mouseClicked(MouseEvent e) {
+            
+            Calendar timePressed = Calendar.getInstance();
 
-            Source source = new Source(sourceArea.getText(), sourceName, Player.getInstance().getUsername());
-            boolean success = SourceManager.getInstance().saveFileToSourceFolder(source);
+            Source source = new Source(sourceArea.getText(),sourceName, Player.getInstance().getUsername());
+            Object sourceObject = SourceCompiler.getInstanceOfSource(source);
+
+            boolean success = false;
+            if(sourceObject != null){
+                success = true;
+            }
+
+            compileResult.setText(" Compile result for " +
+                    sourceName + ".java at <" + timePressed.getTime().toString() + "> : \n");
+            if(success){
+                compileResult.append("\nCompilation was successfull");
+            }else{
+                compileResult.append("\nCompilation failed: \n"+SourceCompiler.getLastError());
+            }
+            
+            if(!success){
+                JOptionPane.showMessageDialog(null, "File does not compile", "Compilation error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            success = SourceManager.getInstance().saveFileToSourceFolder(source);
 
             if(success){
                 JOptionPane.showMessageDialog(null, "Save succesfull");
-                
+                saved = true;
             }else{
-                JOptionPane.showMessageDialog(null, "Save failed");
+                JOptionPane.showMessageDialog(null, "Save failed", "Save error", JOptionPane.ERROR_MESSAGE);
             }
             saveButton.setForeground(Color.WHITE);
         }
     }
     private final class EditorCompileListener extends EditorMenuListener{
+        
+        public EditorCompileListener(Editor parent){
+            super(parent);
+        }
         
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -269,4 +325,66 @@ public final class Editor extends JFrame {
         }
     }
     
+    private final class EditorBackListener extends EditorMenuListener{
+
+        public EditorBackListener(Editor parent){
+            super(parent);
+        }
+        
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            
+            if(!saved){
+                int result = JOptionPane.showConfirmDialog(null, 
+                          "        You have unsaved changes,\n"
+                        + "are you sure you want to close the editor?", "Unsaved changes", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if(result == JOptionPane.NO_OPTION){
+                    return;
+                }
+            }
+            
+            parentEditor.getMainFrame().setVisible(true);
+            parentEditor.dispose();
+            
+        }
+    }
+    
+    private final class InputKeyListener implements KeyListener{
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+            if(saved){
+                saved = false;
+                changeSaveButton();
+            }
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if(saved){
+                saved = false;
+                changeSaveButton();
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if(saved){
+                saved = false;
+                changeSaveButton();
+            }
+        }
+        
+        private void changeSaveButton(){
+            saveButton.setForeground(Color.RED);
+        }
+    }
+    
+    MainFrame getMainFrame(){
+        return frame;
+    } 
+    
+    boolean isSaved(){
+        return saved;
+    }
 }
