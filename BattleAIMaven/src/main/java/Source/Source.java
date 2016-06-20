@@ -1,4 +1,4 @@
-package Editor;
+package Source;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -12,7 +12,7 @@ public class Source implements Serializable{
     static final long serialVersionUID = 1L;
     
     private final String name;
-    private final String author;
+    private String author;
     private final String content;
 
     public Source(String content, String name, String author) {
@@ -26,6 +26,7 @@ public class Source implements Serializable{
         this.name = name;
         this.author = author;
     }
+    
     public String getContent() {
         return content;
     }
@@ -36,6 +37,10 @@ public class Source implements Serializable{
 
     public String getAuthor() {
         return author;
+    }
+    
+    public void setAuthor(String author) {
+        this.author = author;
     }
     
     public String toListString(){

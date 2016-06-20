@@ -1,5 +1,6 @@
 package Main;
 
+import Constants.MainConstants;
 import Console.ConsoleFrame;
 import Interface.MainFrame;
 import Networking.Server.ServerDispatcher;
@@ -10,13 +11,13 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 
-public class Main implements ApplicationState{
+public class Main implements MainConstants{
     
     public static ConsoleFrame console;
     private static Boolean consoleReady = false;
     static MainFrame mainFrame;
-    private static String DB_USER;
-    private static String DB_PASS;
+    private static String DB_USER = "root";
+    private static String DB_PASS = "";
         
     public static void main(String[] args){
         System.out.println("---------------------------------------");

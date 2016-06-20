@@ -1,7 +1,7 @@
 package Networking.Server;
 
-import Networking.Client.ConnectionHandler;
 import Console.ConsoleFrame;
+import Networking.Client.ConnectionHandler;
 import Constants.MasterServerConstants;
 import Networking.Requests.PlayerConnect;
 import Networking.Requests.Request;
@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * PlayerConnection handles the continuous connection between a player and a match.
@@ -94,7 +92,8 @@ public class PlayerConnection extends Connection {
                 }
 
             } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(MatchConnection.class.getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(MatchConnection.class.getName()).log(Level.SEVERE, null, ex);
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), ex.getMessage());
                 closeConnection();
             }
         }
@@ -105,7 +104,8 @@ public class PlayerConnection extends Connection {
         try {
             ConnectionHandler.getInstance().sendToMatch(new PlayerConnect(username, true));
         } catch (IOException ex) {
-            Logger.getLogger(PlayerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(PlayerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), ex.getMessage());
         }
     }
     

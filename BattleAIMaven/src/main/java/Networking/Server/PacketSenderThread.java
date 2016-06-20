@@ -1,6 +1,5 @@
 package Networking.Server;
 
-import Engine.GameEntity;
 import Networking.Requests.EntityUpdateRequest;
 
 public class PacketSenderThread extends Thread{

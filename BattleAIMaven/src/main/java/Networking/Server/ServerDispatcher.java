@@ -4,13 +4,15 @@ import Console.ConsoleFrame;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import Constants.MasterServerConstants;
+import java.util.AbstractCollection;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -20,8 +22,8 @@ import java.util.logging.Logger;
 public class ServerDispatcher implements Runnable {
 	
     private static final ServerDispatcher SERVER_DISPATCHER = new ServerDispatcher();
-    protected List<Connection> activeConnections =
-        Collections.synchronizedList(new LinkedList<Connection>());
+    protected AbstractCollection<Connection> activeConnections =
+        new ConcurrentLinkedQueue<>();
     protected AtomicBoolean isRunning;
     protected Thread mainThread;
     protected int port;
@@ -100,14 +102,16 @@ public class ServerDispatcher implements Runnable {
                     return;
                 }
                     
-                for (int i = 0; i < activeConnections.size(); i++)
-                    if (!activeConnections.get(i).isActive()) {
-                            System.out.println("removing");
-                            ConsoleFrame.sendMessage(TimerTask.class.getSimpleName(),
-                                    "Removing connection with "+activeConnections.get(i).getClientSocket().getInetAddress());
-                            activeConnections.remove(i);
-                            i--;
+                Iterator<Connection> it = activeConnections.iterator();
+                while (it.hasNext()) {
+                    Connection connection = it.next();
+                    if (!connection.isActive()) {
+                        System.out.println("removing");
+                        ConsoleFrame.sendMessage(TimerTask.class.getSimpleName(),
+                                "Removing connection with "+connection.getClientSocket().getInetAddress());
+                        it.remove();    
                     }
+                }
             }
         };
         connectionCleaner.scheduleAtFixedRate(removeInactiveConnections, 0,

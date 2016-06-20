@@ -1,5 +1,9 @@
 package Interface;
 
+import Networking.Server.Player;
+import java.awt.Color;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Dragos-Alexandru
@@ -17,6 +21,7 @@ public class MultiplayerLanPanel extends javax.swing.JPanel {
         this.rootFrame = rootFrame;
         
         initComponents();
+        Player.getInstance().logOut();
     }
 
     /**
@@ -36,6 +41,9 @@ public class MultiplayerLanPanel extends javax.swing.JPanel {
         password = new javax.swing.JLabel();
         portNumberField = new javax.swing.JTextField();
         portNumber = new javax.swing.JLabel();
+        playerNameField = new javax.swing.JTextField();
+        playerNameLabel = new javax.swing.JLabel();
+        createServerButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(600, 400));
@@ -63,29 +71,52 @@ public class MultiplayerLanPanel extends javax.swing.JPanel {
 
         portNumber.setText("Port number:");
 
+        playerNameLabel.setText("Player name:");
+
+        createServerButton.setBackground(new java.awt.Color(255, 255, 255));
+        createServerButton.setText("Create server");
+        createServerButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createServerButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(129, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(adress, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(password, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(portNumber, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(connectButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                    .addComponent(backButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                    .addComponent(portNumberField)
-                    .addComponent(passwordField)
-                    .addComponent(adressField))
-                .addGap(212, 212, 212))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(160, 160, 160)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(adress, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(password, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(portNumber, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(playerNameLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(playerNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                            .addComponent(portNumberField)
+                            .addComponent(passwordField)
+                            .addComponent(adressField)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(createServerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(connectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(37, 37, 37)))
+                .addGap(175, 175, 175))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(72, 72, 72)
+                .addGap(34, 34, 34)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(playerNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(playerNameLabel))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(adress))
@@ -97,15 +128,19 @@ public class MultiplayerLanPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(portNumberField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(portNumber))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
                 .addComponent(connectButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(createServerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(17, 17, 17)
                 .addComponent(backButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(69, 69, 69))
+                .addGap(46, 46, 46))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
+        if(!checkPlayerName())
+            return;
         rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
     }//GEN-LAST:event_connectButtonActionPerformed
 
@@ -113,14 +148,40 @@ public class MultiplayerLanPanel extends javax.swing.JPanel {
         rootFrame.changePanel(new MultiplayerChooserPanel(rootFrame));
     }//GEN-LAST:event_backButtonActionPerformed
 
+    private void createServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createServerButtonActionPerformed
+        if(!checkPlayerName())
+            return ;
+    }//GEN-LAST:event_createServerButtonActionPerformed
+    
+    /**
+     * Returns true if the player has put a valid name
+     * @return 
+     */
+    private boolean checkPlayerName(){
+        String playerName = playerNameField.getText();
+        
+        if(playerName.isEmpty()){
+            JOptionPane.showMessageDialog(null, "You must choose a player name", "Must have a player name", JOptionPane.WARNING_MESSAGE);
+            playerNameLabel.setForeground(Color.RED);
+            return false;
+        }
+        
+        playerNameLabel.setForeground(Color.BLACK);
+        
+        return true;
+    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel adress;
     private javax.swing.JTextField adressField;
     private javax.swing.JButton backButton;
     private javax.swing.JButton connectButton;
+    private javax.swing.JButton createServerButton;
     private javax.swing.JLabel password;
     private javax.swing.JTextField passwordField;
+    private javax.swing.JTextField playerNameField;
+    private javax.swing.JLabel playerNameLabel;
     private javax.swing.JLabel portNumber;
     private javax.swing.JTextField portNumberField;
     // End of variables declaration//GEN-END:variables

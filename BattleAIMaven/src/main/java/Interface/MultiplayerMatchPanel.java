@@ -2,9 +2,9 @@ package Interface;
 
 import Networking.Client.ConnectionHandler;
 import Console.ConsoleFrame;
-import Editor.Source;
-import Editor.SourceManager;
-import Main.GameModes;
+import Source.Source;
+import Source.SourceManager;
+import Enums.GameModes;
 import Networking.Requests.AddPlayer;
 import Networking.Requests.ChatMessage;
 import Networking.Requests.RemovePlayer;
@@ -13,6 +13,7 @@ import Networking.Requests.RequestType;
 import Networking.Requests.SourceFileReceived;
 import Networking.Requests.SourceFileTransfer;
 import Networking.Requests.StartBattle;
+import Networking.Requests.EndBattle;
 import Networking.Server.ClientServerDispatcher;
 import Networking.Server.Match;
 import Networking.Server.Player;
@@ -273,6 +274,7 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
         try{
             if (index != lastSelectedIndex) {
                 selectedSource = sourceList.get(index);
+                selectedSource.setAuthor(Player.getInstance().getUsername());
                 ConnectionHandler.getInstance().
                         sendToMatch(new SourceFileTransfer(Player.getInstance().getUsername(), selectedSource));
                 lastSelectedIndex = index;
@@ -296,6 +298,10 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
 
+        if(this.listPlayersAndScripts.getModel().getSize() <= 1){
+            return;
+        }
+        
         // Check if the user has selected a source file
         if (ConnectionHandler.getInstance().isHost()) 
         {
@@ -318,7 +324,6 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
             ClientServerDispatcher.getInstance().broadcast(new StartBattle());
 
-            setWorkerStatus(false);
             List<Source> playersSources = new LinkedList(playersSourcesMap.values());
             VisualEngine ve = VisualEngine.getInstance(playersSources);
             ve.setMatchMode(GameModes.MULTIPLAYER_HOST);
@@ -369,8 +374,6 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                 
                 try {
                         Request request = (Request)ConnectionHandler.getInstance().readFromMatch();
-                        if (request.getType() == RequestType.START_BATTLE)
-                            listenForRequests = false;
                         
                         SwingUtilities.invokeLater(new Runnable() {
 
@@ -387,11 +390,17 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                         playerSelectionModel.removeElement(((RemovePlayer)request).getUsername());
                                         break;
                                     case RequestType.START_BATTLE:
+                                        ConnectionHandler.getInstance().clearGameData();
                                         if (!ConnectionHandler.getInstance().isHost()) {
                                             VisualEngine ve = VisualEngine.getInstance();
                                             ve.setMatchMode(GameModes.MULTIPLAYER_CLIENT);
                                             ve.setVisible(true);
                                         }
+                                        break;
+                                    case RequestType.END_BATTLE: 
+                                        EndBattle endBattleRequest = (EndBattle)request;
+                                        Scoreboard scor = new Scoreboard(endBattleRequest.getTankList());
+                                        scor.setVisible(true);  
                                         break;
                                     case RequestType.SOURCE_FILE_RECEIVED:
                                         String username = ((SourceFileReceived)request).getUsername();
@@ -405,6 +414,9 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                         }
                                         playerSelectionModel.addElement(username + "/" + sourcename);
                                         
+                                        break;
+                                    case RequestType.ENTITIY_UPDATE:
+                                        ConnectionHandler.getInstance().addGameData(request);
                                         break;
                                     default:
                                         break;

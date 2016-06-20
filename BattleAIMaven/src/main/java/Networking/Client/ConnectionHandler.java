@@ -13,10 +13,12 @@ import Networking.Server.Player;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +30,7 @@ public class ConnectionHandler {
     
     private final static ConnectionHandler INSTANCE = new ConnectionHandler();
     
+    private final InetSocketAddress masterServerAddress;
     private Socket masterServerSocket;
     private ObjectInputStream masterServerInputStream;
     private ObjectOutputStream masterServerOutputStream;
@@ -40,11 +43,16 @@ public class ConnectionHandler {
     // this variable indicated where the disconnect was voluntary
     private boolean disconnectedFromMatch;
     
+    private final BlockingQueue<Request> gameDataQueue;
+           
     public boolean isHost() {
         return host;
     }
     
     private ConnectionHandler() {
+        masterServerAddress = 
+                new InetSocketAddress(MasterServerConstants.IP, MasterServerConstants.PORT);
+        gameDataQueue = new LinkedBlockingQueue<>();
         masterServerSocket = null;
         matchSocket = null;
         host = false;
@@ -57,12 +65,17 @@ public class ConnectionHandler {
     }
     
     private void connectToMasterServer() throws IOException {
-        masterServerSocket = new Socket(MasterServerConstants.IP, 
-                MasterServerConstants.PORT);
-        masterServerSocket.setSoTimeout(5000);
-        masterServerOutputStream = new ObjectOutputStream(masterServerSocket.getOutputStream());
-        masterServerOutputStream.flush();
-        masterServerInputStream = new ObjectInputStream(masterServerSocket.getInputStream());
+        try {
+            masterServerSocket = new Socket();
+            masterServerSocket.connect(masterServerAddress, 3500);
+            masterServerSocket.setSoTimeout(5000);
+            masterServerOutputStream = new ObjectOutputStream(masterServerSocket.getOutputStream());
+            masterServerOutputStream.flush();
+            masterServerInputStream = new ObjectInputStream(masterServerSocket.getInputStream());
+        } catch (IOException ex) {
+            masterServerSocket = null;
+            throw ex;
+        }
         
     }
     
@@ -89,60 +102,60 @@ public class ConnectionHandler {
     public synchronized void sendToMasterServer(Request request) throws IOException {
         if (masterServerSocket == null)
             connectToMasterServer();
+        
         try {
             masterServerOutputStream.writeObject(request);
+            masterServerOutputStream.flush();
         } catch (IOException ex) {
-            Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-            connectToMasterServer();
-            masterServerOutputStream.writeObject(request);
+            try {
+                connectToMasterServer();
+                masterServerOutputStream.writeObject(request);
+                masterServerOutputStream.flush();
+            } catch (IOException ex2) {
+                masterServerSocket = null;
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), ex2.getMessage());
+                throw ex2;
+            }
         }
-        
-        masterServerOutputStream.flush();
     }
     
     /**
-     * Attempt to read an object from the master server.
+     * Sends an request to the master-server and returns the response.
+     * This should be used only with requests that ask for a response.
      * @return Object read from master server.
      * @throws IOException
      * @throws ClassNotFoundException 
      */
-    public Object readFromMasterServer() throws IOException, ClassNotFoundException {
+    public Object readFromMasterServer(Request request) throws IOException, ClassNotFoundException {
         if (masterServerSocket == null)
             connectToMasterServer();
-        Object result = null;
+        
+        Object response = null;
         try {
-            result = masterServerInputStream.readObject();
+            masterServerOutputStream.writeObject(request);
+            masterServerOutputStream.flush();
+            response = masterServerInputStream.readObject();
         } catch (IOException ex) {
-            Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-            connectToMasterServer();
             try {
-                result = masterServerInputStream.readObject();
+                connectToMasterServer();
+                masterServerOutputStream.writeObject(request);
+                masterServerOutputStream.flush();
+                response = masterServerInputStream.readObject();    
             } catch (IOException ex2) {
+                Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex2);
                 masterServerSocket = null;
-                ConsoleFrame.showError("Connection timed out.");
+                throw ex2;
             }
         }
-        return result;
+        return response;
     }
     
     public void connectToMatch(Match match) throws IOException {
-        
-        int attempt = 1;
-        while (attempt <= 6)
-            try {
-                matchSocket = new Socket(match.getIP(), match.getPort());
-                attempt = 7;
-            } catch (IOException ex) {
-                try {
-                    Thread.sleep(500);
-                    attempt++;
-                } catch (InterruptedException ex1) {
-                    Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex1);
-                }
+        InetSocketAddress address = new InetSocketAddress(match.getIP(), match.getPort());
+        System.out.println("Connecting to " + match.getIP());
+        matchSocket = new Socket();
 
-                if (attempt == 7)
-                    throw ex;
-            }
+        matchSocket.connect(address, 3500);
         
         matchOutputStream = new ObjectOutputStream(matchSocket.getOutputStream());
         matchOutputStream.flush();
@@ -204,4 +217,15 @@ public class ConnectionHandler {
         matchOutputStream.flush();
     }
     
+    public void addGameData(Request request) {
+        gameDataQueue.add(request);
+    }
+    
+    public Request getGameData() throws InterruptedException {
+        return gameDataQueue.take();
+    }
+    
+    public void clearGameData() {
+        gameDataQueue.clear();
+    }
 }

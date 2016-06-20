@@ -9,6 +9,7 @@ public class Player implements Serializable {
     
     private static Player instance;
     private String username;
+    private boolean loggedIn = false;
     
     private Player() {
     }
@@ -23,7 +24,7 @@ public class Player implements Serializable {
      * Sets the player username.
      * @param username 
      */
-    public void setUsername(String username) {
+    private void setUsername(String username) {
         this.username = username;
     }
     
@@ -37,5 +38,25 @@ public class Player implements Serializable {
         return username;
     }
     
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
     
+    /**
+     * Sets the Player as logged into a Master-Server with the given username
+     * @param username 
+     */
+    public void logIn(String username) {
+        loggedIn = true;
+        setUsername(username);
+    }
+
+    /**
+     * Sets the Player as Local
+     */
+    public void logOut() {
+        loggedIn = false;
+        setUsername("Local");
+    }
+
 }

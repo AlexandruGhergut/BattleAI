@@ -11,6 +11,7 @@ import java.util.List;
  * 
  * @author Liviu
  */
+@Deprecated
 public class TankFiringThread extends Thread{
     final List<Tank> tanks;
     final List<Bullet> bullets;

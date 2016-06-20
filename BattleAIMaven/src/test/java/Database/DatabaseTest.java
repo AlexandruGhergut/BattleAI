@@ -12,7 +12,7 @@ public class DatabaseTest {
     private final String[] tables;
     
     public DatabaseTest() {
-        DatabaseHandler.getInstance("root", "");
+        DatabaseHandler.getInstance();
         tables = new String[]{"PLAYER_DB, MATCHES_DB, ATTEND"};
     }
     

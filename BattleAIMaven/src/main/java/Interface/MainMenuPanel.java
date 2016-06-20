@@ -1,6 +1,7 @@
 package Interface;
 
 import Editor.Editor;
+import Networking.Server.Player;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -21,6 +22,7 @@ public class MainMenuPanel extends JPanel {
         this.rootFrame = rootFrame;
         
         initComponents();
+        Player.getInstance().logOut();
     }
 
     /**

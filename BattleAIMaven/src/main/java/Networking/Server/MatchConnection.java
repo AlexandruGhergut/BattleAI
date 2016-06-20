@@ -1,6 +1,5 @@
 package Networking.Server;
 
-import Console.ConsoleFrame;
 import Constants.MasterServerConstants;
 import Networking.Requests.AddPlayer;
 import Networking.Requests.RemovePlayer;
@@ -9,7 +8,9 @@ import Networking.Requests.RequestType;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -32,13 +33,18 @@ public class MatchConnection extends Connection {
     public MatchConnection(Socket clientSocket, 
             ObjectInputStream inputStream,
             ObjectOutputStream outputStream,
-            Match activeMatch)  {
+            Match activeMatch) throws IOException  {
         super(clientSocket, inputStream, outputStream);
-        this.activeMatch = activeMatch;
+        
         activeMatch.setIP(clientSocket.getRemoteSocketAddress().toString());
         String address = clientSocket.getRemoteSocketAddress().toString().substring(1);
         String data[] = address.split(":");
         activeMatch.setIP(data[0]);
+        
+        if (!InetAddress.getByName(MasterServerConstants.IP).isSiteLocalAddress() &&
+                InetAddress.getByName(activeMatch.getIP()).isSiteLocalAddress())
+            activeMatch.setIP(NetworkUtilities.getPublicIP());
+        this.activeMatch = activeMatch;
     }
     
      /**
@@ -75,7 +81,7 @@ public class MatchConnection extends Connection {
                 
                 if (level == MAX_INACTIVITY_LEVEL) 
                    closeConnection();
-                    }
+            }
         };
         
         connectionHandler.scheduleAtFixedRate(handleConnections, MasterServerConstants.PACKET_DELAY * 2, 

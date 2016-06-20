@@ -28,28 +28,46 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="129" max="32767" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="adress" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="password" alignment="1" min="-2" max="-2" attributes="0"/>
-                  <Component id="portNumber" alignment="1" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="160" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="adress" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="password" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="portNumber" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="playerNameLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="playerNameField" pref="176" max="32767" attributes="0"/>
+                          <Component id="portNumberField" max="32767" attributes="0"/>
+                          <Component id="passwordField" alignment="0" max="32767" attributes="0"/>
+                          <Component id="adressField" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="createServerButton" min="-2" pref="170" max="-2" attributes="0"/>
+                          <Component id="connectButton" min="-2" pref="170" max="-2" attributes="0"/>
+                          <Component id="backButton" min="-2" pref="170" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Component id="connectButton" alignment="0" pref="170" max="32767" attributes="0"/>
-                  <Component id="backButton" alignment="0" pref="170" max="32767" attributes="0"/>
-                  <Component id="portNumberField" alignment="1" max="32767" attributes="0"/>
-                  <Component id="passwordField" alignment="1" max="32767" attributes="0"/>
-                  <Component id="adressField" alignment="1" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="212" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="175" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace min="-2" pref="72" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="playerNameField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="playerNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="adressField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="adress" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -64,11 +82,13 @@
                   <Component id="portNumberField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="portNumber" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="47" max="32767" attributes="0"/>
+              <EmptySpace pref="40" max="32767" attributes="0"/>
               <Component id="connectButton" min="-2" pref="41" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="createServerButton" min="-2" pref="41" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
               <Component id="backButton" min="-2" pref="41" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="69" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -116,6 +136,24 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Port number:"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="playerNameField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="playerNameLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Player name:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="createServerButton">
+      <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ff" green="ff" red="ff" type="rgb"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Create server"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createServerButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

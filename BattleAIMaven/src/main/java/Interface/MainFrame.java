@@ -1,6 +1,7 @@
 package Interface;
 
 import Constants.FrameConstants;
+import Networking.Server.Player;
 import Visual.VisualEngine;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -55,6 +56,11 @@ public class MainFrame extends JFrame implements FrameConstants{
     }
     
     public void changePanel(JPanel panel){
+        if(panel instanceof MultiplayerLoginRegisterPanel){
+            if(Player.getInstance().isLoggedIn()){
+                panel = new MultiplayerServerPanel(this);
+            }
+        }
         this.getContentPane().removeAll();
         this.getContentPane().add(panel);
         this.getContentPane().revalidate();

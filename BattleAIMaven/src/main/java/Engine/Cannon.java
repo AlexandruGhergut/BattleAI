@@ -2,12 +2,10 @@ package Engine;
 import java.io.Serializable;
 import Constants.EngineConstants;
 import Constants.VisualConstants;
-import Visual.VisualPanel;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -17,7 +15,6 @@ import java.awt.geom.AffineTransform;
 
 final public class Cannon extends GameEntity implements Serializable,TransformInterface, Drawable{
 
-    private transient final Image cannonSprite;
     Tank parent;
     boolean detected;
     /**
@@ -34,7 +31,6 @@ final public class Cannon extends GameEntity implements Serializable,TransformIn
         //current angle of the bullet which will be the same
         width = VisualConstants.CANNON_WIDTH;
         height = VisualConstants.CANNON_HEIGHT;
-        cannonSprite = VisualPanel.cannonSprite;
         speed = EngineConstants.CANNON_SPEED;
         damage = EngineConstants.DAMAGE;
         angle = EngineConstants.ANGLE;
@@ -84,8 +80,8 @@ final public class Cannon extends GameEntity implements Serializable,TransformIn
             return;
         }
         
-        for(int i = 0; i<GameEntity.entityList.size(); i++){
-            entity = GameEntity.entityList.get(i);
+        for(int i = 0; i<GameEntity.ENTITY_LIST.size(); i++){
+            entity = GameEntity.ENTITY_LIST.get(i);
             
             if(entity instanceof Tank && ((Tank)entity).inTheGame() && entity != parent){
                 t = (Tank)entity;
@@ -177,7 +173,7 @@ final public class Cannon extends GameEntity implements Serializable,TransformIn
                 );
         //firePoint = getForwardPoint(new Point((int)x, (int)y),angle,VisualConstants.CANNON_WIDTH);
         
-        Bullet b=new Bullet(id, firePoint.x,firePoint.y, this.parent);
+        Bullet b= new Bullet(id, firePoint.x,firePoint.y, this.parent);
         b.setAngle(angle);
         b.setDamage(damage);
         b.setSpeed(EngineConstants.BULLET_SPEED);
@@ -215,7 +211,7 @@ final public class Cannon extends GameEntity implements Serializable,TransformIn
         g2.setStroke(s);
         //end reidahr
         
-        g2.drawImage(VisualPanel.cannonSprite, (int) cannonStart.x, (int) cannonStart.y, null);     //draw cannon
+        g2.drawImage(EngineConstants.CANNON_SPRITE, (int) cannonStart.x, (int) cannonStart.y, null);     //draw cannon
         
         g2.setTransform(at);
     }

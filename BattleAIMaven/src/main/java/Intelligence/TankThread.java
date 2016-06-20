@@ -26,6 +26,7 @@ public class TankThread extends Thread{
                 }
             } catch (InterruptedException ex) {
                 Console.ConsoleFrame.sendMessage("TankThread", ex.getMessage());
+                this.stopNicely();
             }
         }
     }
@@ -33,6 +34,7 @@ public class TankThread extends Thread{
     
     
     public void stopNicely(){
+        this.interrupt();
         running = false;
     }
 }

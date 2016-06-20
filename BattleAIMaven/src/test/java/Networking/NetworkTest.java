@@ -5,7 +5,6 @@ import Networking.Server.ClientServerDispatcher;
 import Networking.Server.Match;
 import Networking.Server.ServerDispatcher;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.List;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -14,6 +13,7 @@ import org.junit.Test;
 public class NetworkTest {
     
     public NetworkTest() throws InterruptedException {
+        System.setProperty("TEST", "true");
         ServerDispatcher.getInstance().start(Constants.MasterServerConstants.PORT);
         Thread.sleep(1500);
     }

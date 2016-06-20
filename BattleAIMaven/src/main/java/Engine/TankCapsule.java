@@ -1,6 +1,5 @@
 package Engine;
 
-import java.awt.Point;
 import java.io.Serializable;
 
 /**
@@ -13,12 +12,14 @@ import java.io.Serializable;
  */
 public class TankCapsule implements Serializable {
     private Tank tank;
+    private transient int index;
     
     public TankCapsule(){
-        synchronized(GameEntity.entityList) {
-            if(GameEntity.entityList.size()>0){
-                if(GameEntity.currentIndex < GameEntity.entityList.size()){
-                    tank = (Tank)GameEntity.entityList.get(GameEntity.currentIndex++);
+        synchronized(GameEntity.ENTITY_LIST) {
+            if(GameEntity.ENTITY_LIST.size()>0){
+                if(GameEntity.currentIndex < GameEntity.ENTITY_LIST.size()){
+                    index = GameEntity.currentIndex;
+                    tank = (Tank)GameEntity.ENTITY_LIST.get(GameEntity.currentIndex++);
                     tank.setTankCapsule(this);
                 }
             }
@@ -41,13 +42,21 @@ public class TankCapsule implements Serializable {
     public final void rotateCannon(double degrees){
         tank.rotateCannon(degrees);
     }
-    
+    public final double getLife(){
+        return tank.getLife();
+    };
+    public final double getEnergy(){
+        return tank.getEnergy();
+    }
+    public final double getAngle(){
+      return tank.getAngle();
+    };
     public final void fire(){
             Bullet b = tank.fire();
             
             if (b != null) {
-            synchronized (GameEntity.entityList) {
-                GameEntity.entityList.add(b);
+            synchronized (GameEntity.ENTITY_LIST) {
+                GameEntity.ENTITY_LIST.add(b);
             }
         }
     }

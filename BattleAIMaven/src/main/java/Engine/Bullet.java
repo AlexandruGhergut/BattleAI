@@ -3,11 +3,9 @@ package Engine;
 import java.io.Serializable;
 import Constants.EngineConstants;
 import Constants.VisualConstants;
-import Visual.VisualPanel;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.geom.*;
 
 /**
@@ -17,7 +15,6 @@ import java.awt.geom.*;
 
 final public class Bullet extends GameEntity implements Serializable,TransformInterface, Drawable{
 
-    transient Image bulletSprite ;
     transient Tank owner;
     
     public Bullet(int id, double xPos , double yPos, Tank owner){
@@ -25,7 +22,6 @@ final public class Bullet extends GameEntity implements Serializable,TransformIn
         //spd represents the speed of the bullet, dmg represents the damage that the bullet gives to an
         //enemy tank and ang represents the angle in wich the bullet is rotated
         //id represents the id of the tank the fired the bullet
-        this.bulletSprite = VisualPanel.bulletSprite;
         width = VisualConstants.BULLET_WIDTH;
         height = VisualConstants.BULLET_HEIGHT;
         speed = EngineConstants.BULLET_SPEED;
@@ -45,6 +41,10 @@ final public class Bullet extends GameEntity implements Serializable,TransformIn
      */
     public int getId(){
         return id;
+    }
+    
+    public Tank getOwner(){
+        return owner;
     }
     
     @Override

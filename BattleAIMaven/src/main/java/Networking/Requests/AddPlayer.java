@@ -1,6 +1,5 @@
 package Networking.Requests;
 
-import Networking.Server.ClientServerDispatcher;
 import java.io.ObjectOutputStream;
 
 public class AddPlayer extends Request {

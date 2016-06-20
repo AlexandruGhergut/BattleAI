@@ -30,6 +30,7 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
         initComponents();
         this.usernameField.setText(Player.getInstance().getUsername());
         passwordField.setText("");
+        
     }
 
     /**
@@ -134,16 +135,19 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
         try {
             worker.execute();
             if(worker.get()){
+                String scrambledPassword = 
+                        Guard.scramblePassword(new String(passwordField.getPassword()));
                 // Send a login request
-                ConnectionHandler.getInstance().sendToMasterServer(new LoginAccount(usernameField.getText(), 
-                        new String(passwordField.getPassword())));
-                Object ob = ConnectionHandler.getInstance().readFromMasterServer();
+                LoginAccount request = 
+                        new LoginAccount(usernameField.getText(), scrambledPassword);
+                Object ob = ConnectionHandler.getInstance().readFromMasterServer(request);
                 BooleanResponse response = (BooleanResponse)ob;
                 // Check if the authentification was successful
                 if (response.getValue() == false) {
                     ConsoleFrame.showError("No account matches the provided username and password");
                     return;
                 }
+                Player.getInstance().logIn(usernameField.getText());
                 rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
             } else {
                 ConsoleFrame.showError("Username can't contain these characters: ' = + ; \" ");
@@ -159,15 +163,18 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
             worker.execute();
             if(worker.get()){
                 // Send a register request
-                ConnectionHandler.getInstance().sendToMasterServer(new RegisterAccount(usernameField.getText(), 
-                        new String(passwordField.getPassword())));
-                Object ob = ConnectionHandler.getInstance().readFromMasterServer();
+                String scrambledPassword = 
+                        Guard.scramblePassword(new String(passwordField.getPassword()));
+                RegisterAccount request = 
+                        new RegisterAccount(usernameField.getText(), scrambledPassword);
+                Object ob = ConnectionHandler.getInstance().readFromMasterServer(request);
                 BooleanResponse response = (BooleanResponse)ob;
                 // Check if the authentification was successful
                 if (response.getValue() == false) {
                     ConsoleFrame.showError("An account with that name already exists.");
                     return;
                 }
+                Player.getInstance().logIn(usernameField.getText());
                 rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
             }else{
                 ConsoleFrame.showError("Username can't contain these characters: ' = + ; \" ");
@@ -187,7 +194,6 @@ public class MultiplayerLoginRegisterPanel extends javax.swing.JPanel {
             String password = Guard.scramblePassword(String.valueOf(passwordField.getPassword()));
             
             if(checkUsername(username)){
-                Player.getInstance().setUsername(username);
                 success = true;
             }else{
                 success = false;

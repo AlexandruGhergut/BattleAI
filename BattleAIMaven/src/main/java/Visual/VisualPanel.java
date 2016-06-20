@@ -1,21 +1,16 @@
 package Visual;
 
-import Console.ConsoleFrame;
-import Constants.PathConstants;
 import Engine.Bullet;
 import Engine.GameEntity;
 import Engine.Tank;
-import Main.GameModes;
+import Enums.GameModes;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.RenderingHints;
-import java.io.File;
-import java.io.IOException;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import javax.imageio.ImageIO;
 
 /**
  *
@@ -31,18 +26,10 @@ public class VisualPanel extends javax.swing.JPanel {
     public ArrayList<GameEntity> entityList;
     /**
      * Creates new form VisualPanel
-     */ 
-    public static Image tankSprite, cannonSprite, bulletSprite;
+     */
     
     public VisualPanel() {
         initComponents();
-        try {
-            tankSprite = ImageIO.read(new File(PathConstants.TANK_BODY_SPRITE_PATH));
-            cannonSprite = ImageIO.read(new File(PathConstants.TANK_CANNON_SPRITE_PATH));
-            bulletSprite = ImageIO.read(new File(PathConstants.BULLET_SPRITE_PATH));
-        } catch (IOException ex) {
-            ConsoleFrame.sendMessage("VisualPanel", "Failed to get sprites");
-        }
         
         animator = new Animator(this);
     }
@@ -54,6 +41,7 @@ public class VisualPanel extends javax.swing.JPanel {
     
     @Override
     public void paintComponent(Graphics g){
+        
         g.setColor(Color.CYAN);
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
         
@@ -61,7 +49,7 @@ public class VisualPanel extends javax.swing.JPanel {
         ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         
         //drawing all the stuff
-        //Testing 
+        //Testing
         if (entityList != null) {
             synchronized (entityList) {
                 for (GameEntity tankAux : entityList) {

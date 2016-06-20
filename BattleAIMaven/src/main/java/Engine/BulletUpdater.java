@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class BulletUpdater extends Thread{
     private boolean running = true;
-    ArrayList<GameEntity> entities = GameEntity.entityList;
+    ArrayList<GameEntity> entities = GameEntity.ENTITY_LIST;
     
     public boolean isOutOfTheArena(Bullet b){
         return b.getX() < 0 || b.getX() > VisualConstants.ENGINE_WIDTH || b.getY() < 0 || b.getY() > VisualConstants.ENGINE_HEIGHT;
@@ -25,8 +25,8 @@ public class BulletUpdater extends Thread{
         
         while(running){
             synchronized (entities) {
-                for(int i = 0; i < GameEntity.entityList.size(); i++) {
-                    entity = GameEntity.entityList.get(i);
+                for(int i = 0; i < GameEntity.ENTITY_LIST.size(); i++) {
+                    entity = GameEntity.ENTITY_LIST.get(i);
                     if (entity instanceof Bullet) {
                         b = (Bullet) entity;
                         if(isOutOfTheArena(b))
