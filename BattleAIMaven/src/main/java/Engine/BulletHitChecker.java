@@ -45,6 +45,7 @@ public class BulletHitChecker extends Thread {
 
                             for (int j = IntelligenceControlThread.getNumberOfTanks(); j < entities.size(); j++) {
                                 if (entities.get(j) instanceof Bullet) {
+                                    
                                     b = (Bullet) entities.get(j);
                                     if (t.collision(b) && b.owner != t) {
                                         entities.remove(b);

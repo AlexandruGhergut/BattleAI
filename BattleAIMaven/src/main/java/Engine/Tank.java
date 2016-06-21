@@ -68,7 +68,7 @@ public class Tank extends GameEntity implements Serializable,MovementInterface, 
                     otherTank.x = (int)tank.getX();
                     otherTank.y = (int)tank.getY();
 
-                    if(!isInsideArena() || tankRect.intersects(otherTank)){
+                    if(!isInsideArena() || tankRect .intersects(otherTank)){
                         x = (int) ((Math.random() * 1000) % VisualConstants.ENGINE_WIDTH)
                                 - 10 - VisualConstants.TANK_WIDTH;
                         y = (int) ((Math.random() * 1000) % VisualConstants.ENGINE_HEIGHT)
