@@ -47,6 +47,7 @@ public class BulletHitChecker extends Thread {
 
                             for (int j = IntelligenceControlThread.getNumberOfTanks(); j < entities.size(); j++) {
                                 if (entities.get(j) instanceof Bullet) {
+                                    
                                     b = (Bullet) entities.get(j);
                                     bulletRect = new Rectangle((int) b.getX(), (int) b.getY(), (int) Constants.VisualConstants.BULLET_WIDTH, (int) Constants.VisualConstants.BULLET_HEIGHT);
 

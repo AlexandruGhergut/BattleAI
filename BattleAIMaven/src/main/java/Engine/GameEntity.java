@@ -1,6 +1,7 @@
 package Engine;
 
 import Console.ConsoleFrame;
+import java.awt.Rectangle;
 import java.awt.geom.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -97,18 +98,6 @@ public abstract class GameEntity implements TransformInterface, Serializable {
         angle = ang % 360;
     }
     /**
-     * Gets the area of the current entity
-     * @return a Area object representing the area of the current entity
-     */
-    
-    public Area getArea(){
-        transformation.setToIdentity();
-        Area area = new Area(new Rectangle2D.Double(x, y, width, height));
-        transformation.rotate(angle);
-        area.transform(transformation);
-        return area;
-    }
-    /**
      * Checks for collision .
      *
      * @param obj representing the object that we check collision for
@@ -116,7 +105,7 @@ public abstract class GameEntity implements TransformInterface, Serializable {
      * otherwise null is returned
      */
     public boolean collision(GameEntity obj) {
-        return getArea().intersects(obj.getRectangle());  
+        return this.getRectangle().intersects(obj.getRectangle());  
     }
     
     /**
