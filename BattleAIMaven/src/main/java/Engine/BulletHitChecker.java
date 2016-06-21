@@ -29,6 +29,7 @@ public class BulletHitChecker extends Thread {
     public void run(){
         Tank t;
         Bullet b;
+        Rectangle2D tankRect, bulletRect;
         ArrayList<GameEntity> entities = GameEntity.ENTITY_LIST;
         startingTime = System.currentTimeMillis()/1000;
         
@@ -42,12 +43,15 @@ public class BulletHitChecker extends Thread {
                         t = (Tank) entities.get(i);
                         
                         if (t.inTheGame()) {
+                            tankRect = new Rectangle((int) t.getX(), (int) t.getY(), (int) Constants.VisualConstants.TANK_WIDTH, (int) Constants.VisualConstants.TANK_HEIGHT);
 
                             for (int j = IntelligenceControlThread.getNumberOfTanks(); j < entities.size(); j++) {
                                 if (entities.get(j) instanceof Bullet) {
                                     
                                     b = (Bullet) entities.get(j);
-                                    if (t.collision(b) && b.owner != t) {
+                                    bulletRect = new Rectangle((int) b.getX(), (int) b.getY(), (int) Constants.VisualConstants.BULLET_WIDTH, (int) Constants.VisualConstants.BULLET_HEIGHT);
+
+                                    if (tankRect.intersects(bulletRect) && b.owner != t) {
                                         entities.remove(b);
                                         t.hitByBullet();
                                         //adding the damage as score
