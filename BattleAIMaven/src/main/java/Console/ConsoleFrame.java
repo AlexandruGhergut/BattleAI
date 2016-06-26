@@ -181,11 +181,10 @@ public final class ConsoleFrame extends JFrame {
 
     public static void showError(String message) {
         SwingUtilities.invokeLater(() -> {
-            /*JOptionPane jop = new JOptionPane();
-            JDialog dialog = jop.createDialog(null, message);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);    
+            JDialog dialog = optionPane.createDialog("Error");
             dialog.setAlwaysOnTop(true);
-            dialog.setVisible(true);*/
-            JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+            dialog.setVisible(true);
         });
     }
 
