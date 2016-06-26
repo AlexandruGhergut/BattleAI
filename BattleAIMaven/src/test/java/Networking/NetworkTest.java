@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class NetworkTest {
     
-    private int sleepAmount = 1500;
+    private final int sleepAmount;
     private final Match activeMatch;
     
     public NetworkTest() {
@@ -23,7 +23,6 @@ public class NetworkTest {
         sleepAmount = 1500;
         activeMatch =  new Match("Test", "127.0.0.1",
                 Constants.MasterServerConstants.PORT + 1, "test", 2);
-        ServerDispatcher.getInstance().start(Constants.MasterServerConstants.PORT);
     }
     
     @Before

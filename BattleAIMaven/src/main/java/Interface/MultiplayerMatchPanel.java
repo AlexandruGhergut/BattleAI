@@ -461,7 +461,7 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                     Scoreboard scor = new Scoreboard(endBattleRequest.getTankList());
                                     scor.setVisible(true);
                                     ve.setVisible(false);
-                                    if (ConnectionHandler.getInstance().isHost()) {
+                                    if (ConnectionHandler.getInstance().isHost() && Player.getInstance().isLoggedIn()) {
                                         EndBattleDBUpdate dbUpdateRequest
                                                 = new EndBattleDBUpdate(endBattleRequest);
                                         try {

@@ -57,7 +57,7 @@ public class DevelopersPanel extends javax.swing.JPanel {
         jLabel3.setText("Ghergut Alexandru : All Networking/ Git Master/ Pull request denier");
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel6.setText("Mereu Alexandra : Database Designer/ Database Handler");
+        jLabel6.setText("Mereu Alexandra : Database Designer/ Database Handler / Editor Kickstarter");
 
         jLabel7.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel7.setText("Oprescu Liviu : Visual/ Intelligence/ Engine - AI/ Hack enthusiast");
@@ -94,7 +94,7 @@ public class DevelopersPanel extends javax.swing.JPanel {
                             .addComponent(jLabel7)
                             .addComponent(jLabel2)
                             .addComponent(jLabel8))))
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
