@@ -13,6 +13,8 @@ import java.awt.Rectangle;
 import java.awt.geom.*;
 import java.util.Random;
 
+/* Warning: manipulating x and y directly will result in collision not being 
+   handled properly. */
 public class Tank extends GameEntity implements Serializable, MovementInterface, TransformInterface, Drawable {
 
     protected double life;
@@ -207,9 +209,7 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
      * not.
      */
     public boolean isInsideArena(Point2D.Double p) {
-        // we use strictly equals to provide some distance from the wall
-        return p.getX() > 0 && p.getX() < VisualConstants.ENGINE_WIDTH&&
-                p.getY() > 0 && p.getY() < VisualConstants.ENGINE_HEIGHT;
+        return arenaRectangle.contains(p);
     }
 
     /**
@@ -356,8 +356,8 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
         setPosition(random.nextInt((int)arenaRectangle.getMaxX()), 
                 random.nextInt((int)arenaRectangle.getMaxY()));
         while (!isInsideArena()) {
-            setPosition(random.nextInt(VisualConstants.ENGINE_WIDTH), 
-                random.nextInt(VisualConstants.ENGINE_HEIGHT));
+            setPosition(random.nextInt((int)arenaRectangle.getMaxX()), 
+                random.nextInt((int)arenaRectangle.getMaxY()));
         }
     }
     
