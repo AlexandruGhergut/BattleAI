@@ -5,6 +5,7 @@ import Networking.Server.ServerDispatcher;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ScrollPaneConstants;
@@ -180,6 +181,10 @@ public final class ConsoleFrame extends JFrame {
 
     public static void showError(String message) {
         SwingUtilities.invokeLater(() -> {
+            /*JOptionPane jop = new JOptionPane();
+            JDialog dialog = jop.createDialog(null, message);
+            dialog.setAlwaysOnTop(true);
+            dialog.setVisible(true);*/
             JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
         });
     }

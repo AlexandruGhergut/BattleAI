@@ -7,11 +7,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilePermission;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -36,7 +38,11 @@ public final class SourceManager {
 
         if (!sourceFolder.exists()) {
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Creating source folder");
-            sourceFolder.mkdir();
+            if(sourceFolder.mkdir()){
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Succesfully created source folder");
+            }else{
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to create source folder");
+            }
             checkReadWrite(sourceFolder);
             File sourceIndex = new File(PathConstants.USER_SOURCES_INDEX_PATH);
             writeSourceFileIndex(sourceIndex);
@@ -86,12 +92,18 @@ public final class SourceManager {
      * @throws IOException
      */
     private void checkReadWrite(File sourceFolder) throws IOException {
-        ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Testing read/write permissions source folder");
+        ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Testing read/write permissions source folder at "+sourceFolder.getAbsolutePath());
         if (!sourceFolder.canRead()) {
-            throw new IOException("Can't read from designated folder!");
+            sourceFolder.setReadable(true);
+            if(!sourceFolder.canRead()){
+                throw new IOException("Can't read from designated folder "+sourceFolder.getCanonicalPath());
+            }
         }
         if (!sourceFolder.canWrite()) {
-            throw new IOException("Can't write to designated folder!");
+            sourceFolder.setWritable(true);
+            if(!sourceFolder.canWrite()){
+                throw new IOException("Can't write to designated folder "+sourceFolder.getCanonicalPath());
+            }
         }
     }
 

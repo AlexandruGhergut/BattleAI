@@ -26,7 +26,6 @@ public class Main implements MainConstants {
         ConsoleFrame.sendMessage(Main.class.getSimpleName(), "Deciding how to start application...");
         final boolean showConsole;
         final boolean isServer;
-
         if (args.length > 0) {
             switch (args[0]) {
                 case MASTER_SERVER_CONSOLE: {

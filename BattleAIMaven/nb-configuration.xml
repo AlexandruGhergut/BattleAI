@@ -19,6 +19,7 @@ Any value defined here will override the pom.xml file value but is only applicab
         <configurations>
             <configuration id="client" profiles="">
                 <property name="skipTests">true</property>
+                <property name="exec.args">-classpath %classpath Main.Main</property>
             </configuration>
             <configuration id="server" profiles="">
                 <property name="s"/>
