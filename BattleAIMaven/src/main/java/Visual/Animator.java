@@ -4,17 +4,19 @@ import Console.ConsoleFrame;
 import Enums.GameModes;
 import Networking.Client.ConnectionHandler;
 import Networking.Requests.EntityUpdateRequest;
+import Networking.Requests.Request;
+import Networking.Requests.RequestType;
 import Networking.Server.Packet;
 
 /**
- * The separate thread which is responsible
- * with updating game entitites. It calls the 
- * repaint() function from JPanel.
- * 
+ * The separate thread which is responsible with updating game entitites. It
+ * calls the repaint() function from JPanel.
+ *
  * @author Liviu
- * 
+ *
  */
-public class Animator extends Thread{
+public class Animator extends Thread {
+
     private final VisualPanel panel;
     private boolean running;
     private final int framerate = Constants.VisualConstants.FRAME_RATE;
@@ -22,26 +24,25 @@ public class Animator extends Thread{
     volatile boolean updateDone;
     long c = 0;
     private Packet currentPacket;
-    
+
     private GameModes gameMode;
-    
-    
-    public Animator(VisualPanel panel){
+
+    public Animator(VisualPanel panel) {
         this.panel = panel;
         running = true;
     }
-    
-    public void setGameMode(GameModes gameMode){
+
+    public void setGameMode(GameModes gameMode) {
         this.gameMode = gameMode;
     }
-    
-    private void runMultiplayerHost(){
-        while(running){
+
+    private void runMultiplayerHost() {
+        while (running) {
             if (paintThread == null || !paintThread.isAlive()) {
                 paintThread = new Thread(() -> {
                     while (running) {
                         panel.repaint();
-                        
+
                         try {
                             Thread.sleep(1000 / framerate);
                         } catch (InterruptedException ex) {
@@ -53,46 +54,48 @@ public class Animator extends Thread{
                 paintThread.start();
 
             }
-            
+
             //panel.repaint();  
-            
-            try{
-                Thread.sleep(1000/framerate);
-            }
-            catch(InterruptedException iex){
+            try {
+                Thread.sleep(1000 / framerate);
+            } catch (InterruptedException iex) {
                 ConsoleFrame.sendMessage("Animator", "Thread interrupted");
             }
         }
     }
-    
-    private void runMultiplayerClient(){
-        while(running){
-            
+
+    private void runMultiplayerClient() {
+        while (running) {
+
             //EntityUpdateRequest newEntities;
             try {
                 //newEntities = (EntityUpdateRequest)ConnectionHandler.getInstance().readFromMatch();
                 //panel.entityList = newEntities.gameEntities;  
-                
-                if(currentPacket != null && currentPacket.framesLeft() > 0)
+
+                if (currentPacket != null && currentPacket.framesLeft() > 0) {
                     panel.entityList = currentPacket.consume();
-                else {
-                    currentPacket = 
-                            ((EntityUpdateRequest)ConnectionHandler.getInstance().getGameData()).packet;
-                    panel.entityList = currentPacket.consume();
+                } else {
+                    Request request = ConnectionHandler.getInstance().getGameData();
+                    if (request.getType() == RequestType.END_BATTLE)
+                        running = false;
+                    else { 
+                        currentPacket
+                            = ((EntityUpdateRequest)request).packet;
+                        panel.entityList = currentPacket.consume();
+                    }
                 }
-                
+
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
                 ConsoleFrame.showError("Failed to read from battle stream");
                 running = false;
             }
-            
-            
+
             if (paintThread == null || !paintThread.isAlive()) {
                 paintThread = new Thread(() -> {
                     while (running) {
                         panel.repaint();
-                        
+
                         try {
                             Thread.sleep(1000 / framerate);
                         } catch (InterruptedException ex) {
@@ -104,25 +107,23 @@ public class Animator extends Thread{
                 paintThread.start();
 
             }
-            
+
             //panel.repaint();  
-            
-            try{
-                Thread.sleep(1000/framerate);
-            }
-            catch(InterruptedException iex){
+            try {
+                Thread.sleep(1000 / framerate);
+            } catch (InterruptedException iex) {
                 ConsoleFrame.sendMessage("Animator", "Thread interrupted");
             }
         }
     }
-    
-    private void runSingleplayer(){
-        while(running){
+
+    private void runSingleplayer() {
+        while (running) {
             if (paintThread == null || !paintThread.isAlive()) {
                 paintThread = new Thread(() -> {
                     while (running) {
                         panel.repaint();
-                        
+
                         try {
                             Thread.sleep(1000 / framerate);
                         } catch (InterruptedException ex) {
@@ -134,22 +135,20 @@ public class Animator extends Thread{
                 paintThread.start();
 
             }
-            
+
             //panel.repaint();  
-            
-            try{
-                Thread.sleep(1000/framerate);
-            }
-            catch(InterruptedException iex){
+            try {
+                Thread.sleep(1000 / framerate);
+            } catch (InterruptedException iex) {
                 ConsoleFrame.sendMessage("Animator", "Thread interrupted");
             }
         }
     }
-    
+
     @Override
-    public void run(){
-        if(gameMode != null){
-            switch(gameMode){
+    public void run() {
+        if (gameMode != null) {
+            switch (gameMode) {
                 case SINGLEPLAYER:
                     runSingleplayer();
                     break;
@@ -162,13 +161,13 @@ public class Animator extends Thread{
             }
         }
     }
+
     /**
-     * Stops the animation in the game engine.
-     * If you want to start the animation again, you'll 
-     * have to create a new Animator object.
+     * Stops the animation in the game engine. If you want to start the
+     * animation again, you'll have to create a new Animator object.
      */
-    
-    public void stopAnimation(){
+
+    public void stopAnimation() {
         running = false;
     }
 }

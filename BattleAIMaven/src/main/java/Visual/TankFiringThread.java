@@ -6,23 +6,24 @@ import Engine.Tank;
 import java.util.List;
 
 /**
- *  This class is temporary. It exists for testing purposes.
- *  It just makes all the tanks fire at a random interval.
- * 
+ * This class is temporary. It exists for testing purposes. It just makes all
+ * the tanks fire at a random interval.
+ *
  * @author Liviu
  */
 @Deprecated
-public class TankFiringThread extends Thread{
+public class TankFiringThread extends Thread {
+
     final List<Tank> tanks;
     final List<Bullet> bullets;
     boolean running;
-    
-    public TankFiringThread(List<Tank> visualEntities, List<Bullet> bullets){
+
+    public TankFiringThread(List<Tank> visualEntities, List<Bullet> bullets) {
         this.tanks = visualEntities;
         this.bullets = bullets;
         running = true;
     }
-    
+
     @Override
     public void run() {
         Bullet auxBullet;
@@ -44,8 +45,8 @@ public class TankFiringThread extends Thread{
 
         }
     }
-    
-    public void stopFiring(){
+
+    public void stopFiring() {
         running = false;
     }
 }

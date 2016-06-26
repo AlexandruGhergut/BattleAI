@@ -32,12 +32,12 @@ public class MatchDatabase {
 
     public void pushMatch(List<String> playersList) {
         DatabaseHandler DB = DatabaseHandler.getInstance();
-        
+
         int idMatch = DB.pushMatch(this);
-        
+
         for (String player : playersList) {
             DB.pushAttend(idMatch, player);
         }
     }
-    
+
 }

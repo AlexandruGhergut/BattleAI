@@ -14,8 +14,9 @@ import Networking.Requests.SourceFileReceived;
 import Networking.Requests.SourceFileTransfer;
 import Networking.Requests.StartBattle;
 import Networking.Requests.EndBattle;
+import Networking.Requests.EndBattleDBUpdate;
+import Networking.Requests.SourceFileRemoved;
 import Networking.Server.ClientServerDispatcher;
-import Networking.Server.Match;
 import Networking.Server.Player;
 import Visual.VisualEngine;
 import java.awt.Color;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -42,52 +42,58 @@ import javax.swing.text.DefaultCaret;
 public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
     MainFrame rootFrame;
-    
+
     private final List<Source> sourceList;
     private Source selectedSource;
     private final DefaultListModel listModel = new DefaultListModel();
-    private final DefaultListModel playerSelectionModel = new DefaultListModel();
+    private final DefaultListModel<String> playerSelectionModel = new DefaultListModel<>();
     private boolean ready = false;
     private int lastSelectedIndex = -1;
     private Boolean listenForRequests = true;
-    private LinkedList<Request> requestsList = new LinkedList<>();
+    private VisualEngine ve = null;
     
     /**
      * Creates new form MultiplayerMatchPanel
+     *
      * @param rootFrame
-     * @param currentMatch
+     * @param playerStateList
      */
-    public MultiplayerMatchPanel(MainFrame rootFrame, Match currentMatch) {
+    public MultiplayerMatchPanel(MainFrame rootFrame, List<String> playerStateList) {
         initComponents();
-        if (!ConnectionHandler.getInstance().isHost())
+
+        if (playerStateList != null) {
+            for (String entry : playerStateList) {
+                playerSelectionModel.addElement(entry);
+            }
+        }
+
+        if (!ConnectionHandler.getInstance().isHost()) {
             startButton.setVisible(false);
+        }
         this.selectButton.setFocusable(false);
         this.readyButton.setFocusable(false);
         this.chatOutputArea.setEditable(false);
         this.chatOutputArea.setLineWrap(true);
         this.chatOutputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        DefaultCaret caret = (DefaultCaret)this.chatOutputArea.getCaret();
+        DefaultCaret caret = (DefaultCaret) this.chatOutputArea.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        
+
         this.serverNameLabel.setText(rootFrame.localServerName);
         this.rootFrame = rootFrame;
-        
+
         listAvailableScripts.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         sourceList = SourceManager.getInstance().getSourceList();
-        if (!ConnectionHandler.getInstance().isHost()) {
-            for(String player:currentMatch.getPlayerList()){
-                playerSelectionModel.addElement(player);
-            }
-        }
+
         listPlayersAndScripts.setModel(playerSelectionModel);
-        for(Source source:sourceList){
+        for (Source source : sourceList) {
             listModel.addElement(source.toListString());
         }
         listAvailableScripts.setModel(listModel);
-        try{
+        try {
             listAvailableScripts.setSelectedIndex(0);
-        }catch(IndexOutOfBoundsException ex){}
-        
+        } catch (IndexOutOfBoundsException ex) {
+        }
+
         ListenerWorker worker = new ListenerWorker(listenForRequests);
         try {
             worker.execute();
@@ -95,12 +101,12 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to listen for requests");
             ConsoleFrame.showError("Failed to listen for requests");
         }
-        
+
         chatInputField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
                 super.keyTyped(e);
-                if(e.getKeyChar() == 10){
+                if (e.getKeyChar() == 10) {
                     sendButtonActionPerformed(null);
                 }
             }
@@ -271,40 +277,53 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
     private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
         int index = listAvailableScripts.getSelectedIndex();
-        try{
+        try {
             if (index != lastSelectedIndex) {
                 selectedSource = sourceList.get(index);
                 selectedSource.setAuthor(Player.getInstance().getUsername());
-                ConnectionHandler.getInstance().
-                        sendToMatch(new SourceFileTransfer(Player.getInstance().getUsername(), selectedSource));
+                editPlayerName(selectedSource.getAuthor(),
+                        selectedSource.getAuthor() + "/" + selectedSource.getName());
+
                 lastSelectedIndex = index;
             }
-        }catch(IndexOutOfBoundsException ex){
+        } catch (IndexOutOfBoundsException ex) {
             ConsoleFrame.showError("Select script, please");
-        } catch (IOException ex) {
-            ConsoleFrame.showError("Cannot send source file content to server.");
         }
     }//GEN-LAST:event_selectButtonActionPerformed
 
     private void readyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_readyButtonActionPerformed
-        if(ready){
-            ready = false;
-            readyButton.setBackground(Color.YELLOW);
-        }else{
-            ready = true;
-            readyButton.setBackground(Color.BLUE);
+        if (lastSelectedIndex == -1) {
+            ConsoleFrame.showError("You must select an AI script first.");
+            return;
+        }
+
+        try {
+            if (ready) {
+                ConnectionHandler.getInstance().
+                        sendToMatch(new SourceFileTransfer(Player.getInstance().getUsername()));
+                ready = false;
+                readyButton.setBackground(Color.YELLOW);
+                selectButton.setEnabled(true);
+            } else {
+                ConnectionHandler.getInstance().
+                        sendToMatch(new SourceFileTransfer(Player.getInstance().getUsername(), selectedSource));
+                ready = true;
+                readyButton.setBackground(Color.BLUE);
+                selectButton.setEnabled(false);
+            }
+        } catch (IOException ex) {
+            ConsoleFrame.showError("Cannot send source file update request to server.");
         }
     }//GEN-LAST:event_readyButtonActionPerformed
 
     private void startButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startButtonActionPerformed
 
-        if(this.listPlayersAndScripts.getModel().getSize() <= 1){
+        if (this.listPlayersAndScripts.getModel().getSize() <= 1) {
             return;
         }
-        
+
         // Check if the user has selected a source file
-        if (ConnectionHandler.getInstance().isHost()) 
-        {
+        if (ConnectionHandler.getInstance().isHost()) {
             String username = Player.getInstance().getUsername();
             AbstractMap playersSourcesMap = ClientServerDispatcher.getInstance().getSourceFilesMap();
             if (playersSourcesMap.get(username) == null) {
@@ -312,7 +331,6 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                 return;
             }
 
-   
             int playersCount = ClientServerDispatcher.getInstance()
                     .getActiveMatch().getNumberOfPlayers();
 
@@ -325,7 +343,7 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
             ClientServerDispatcher.getInstance().broadcast(new StartBattle());
 
             List<Source> playersSources = new LinkedList(playersSourcesMap.values());
-            VisualEngine ve = VisualEngine.getInstance(playersSources);
+            ve = VisualEngine.getInstance(playersSources);
             ve.setMatchMode(GameModes.MULTIPLAYER_HOST);
             ve.setVisible(true);
         }
@@ -333,11 +351,11 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         String input = "";
-        
+
         if (!chatInputField.getText().equals("")) {
             try {
-                input = Player.getInstance().getUsername() + ": " + 
-                        chatInputField.getText() + "\n";
+                input = Player.getInstance().getUsername() + ": "
+                        + chatInputField.getText() + "\n";
                 ConnectionHandler.getInstance().sendToMatch(new ChatMessage(input));
             } catch (IOException ex) {
                 Logger.getLogger(MultiplayerMatchPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -349,126 +367,154 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         ConnectionHandler.getInstance().disconnectFromMatch();
         setWorkerStatus(false);
-        rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
+        if (Player.getInstance().isLoggedIn()) {
+            rootFrame.changePanel(new MultiplayerServerPanel(rootFrame));
+        } else {
+            rootFrame.changePanel(new MultiplayerLanPanel(rootFrame));
+        }
     }//GEN-LAST:event_backButtonActionPerformed
+
+    private int getPlayerIndex(String username) {
+        for (int i = 0; i < playerSelectionModel.size(); i++) {
+            String[] name = playerSelectionModel.get(i).split("/");
+            if (name[0].equals(username)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // newName should be of the form 'username/text'
+    private void editPlayerName(String username, String newName) {
+        int index = getPlayerIndex(username);
+
+        if (index == -1) {
+            return;
+        }
+
+        playerSelectionModel.remove(index);
+        playerSelectionModel.addElement(newName);
+    }
+
+    private void removePlayerName(String username) {
+        int index = getPlayerIndex(username);
+
+        if (index == -1) {
+            return;
+        }
+
+        playerSelectionModel.remove(index);
+    }
 
     /**
      * This worker listens for requests given by the match server
      */
-    public class ListenerWorker extends SwingWorker<Void,List<Request>>{
-        
+    public class ListenerWorker extends SwingWorker<Void, List<Request>> {
+
         private final Boolean continueToListen;
-        
-        public ListenerWorker(Boolean continueToListen){
+
+        public ListenerWorker(Boolean continueToListen) {
             this.continueToListen = continueToListen;
         }
-        
+
         /**
          * Continues to listen for requests from match server
-         * @return 
+         *
+         * @return
          */
         @Override
-        protected Void doInBackground(){
-            
-            while(listenForRequests){
-                
-                try {
-                        Request request = (Request)ConnectionHandler.getInstance().readFromMatch();
-                        
-                        SwingUtilities.invokeLater(new Runnable() {
+        protected Void doInBackground() {
 
-                            @Override
-                            public void run() {
-                                switch (request.getType()) {
-                                    case RequestType.CHAT_MESSAGE:
-                                        chatOutputArea.append(((ChatMessage)request).getMessage());
-                                        break;
-                                    case RequestType.ADD_PLAYER:
-                                        playerSelectionModel.addElement(((AddPlayer)request).getUsername());
-                                        break;
-                                    case RequestType.REMOVE_PLAYER:
-                                        playerSelectionModel.removeElement(((RemovePlayer)request).getUsername());
-                                        break;
-                                    case RequestType.START_BATTLE:
-                                        ConnectionHandler.getInstance().clearGameData();
-                                        if (!ConnectionHandler.getInstance().isHost()) {
-                                            VisualEngine ve = VisualEngine.getInstance();
-                                            ve.setMatchMode(GameModes.MULTIPLAYER_CLIENT);
-                                            ve.setVisible(true);
+            while (listenForRequests) {
+
+                try {
+
+                    Request request = (Request) ConnectionHandler.getInstance().readFromMatch();
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            switch (request.getType()) {
+                                case RequestType.CHAT_MESSAGE:
+                                    chatOutputArea.append(((ChatMessage) request).getMessage());
+                                    break;
+                                case RequestType.ADD_PLAYER:
+                                    playerSelectionModel.addElement(((AddPlayer) request).getUsername());
+                                    break;
+                                case RequestType.REMOVE_PLAYER:
+                                    removePlayerName(((RemovePlayer) request).getUsername());
+                                    playerSelectionModel.removeElement(((RemovePlayer) request).getUsername());
+                                    break;
+                                case RequestType.START_BATTLE:
+                                    ConnectionHandler.getInstance().clearGameData();
+                                    if (!ConnectionHandler.getInstance().isHost()) {
+                                        ve = VisualEngine.getInstance();
+                                        ve.setMatchMode(GameModes.MULTIPLAYER_CLIENT);
+                                        ve.setVisible(true);
+                                    }
+                                    break;
+                                case RequestType.END_BATTLE:
+                                    ConnectionHandler.getInstance().addGameData(request);
+                                    VisualEngine.getInstance().closeWindow();
+                                    EndBattle endBattleRequest = (EndBattle) request;
+                                    Scoreboard scor = new Scoreboard(endBattleRequest.getTankList());
+                                    scor.setVisible(true);
+                                    ve.setVisible(false);
+                                    if (ConnectionHandler.getInstance().isHost() && Player.getInstance().isLoggedIn()) {
+                                        EndBattleDBUpdate dbUpdateRequest
+                                                = new EndBattleDBUpdate(endBattleRequest);
+                                        try {
+                                            ConnectionHandler.getInstance().sendToMasterServer(dbUpdateRequest);
+                                        } catch (IOException ex) {
+                                            ConsoleFrame.sendMessage(this.getClass().getSimpleName(),
+                                                    "Failed to request ");
                                         }
-                                        break;
-                                    case RequestType.END_BATTLE: 
-                                        EndBattle endBattleRequest = (EndBattle)request;
-                                        Scoreboard scor = new Scoreboard(endBattleRequest.getTankList());
-                                        scor.setVisible(true);  
-                                        break;
-                                    case RequestType.SOURCE_FILE_RECEIVED:
-                                        String username = ((SourceFileReceived)request).getUsername();
-                                        String sourcename = ((SourceFileReceived)request).getSourcename();
-                                        for(int i = 0; i<playerSelectionModel.getSize();i++){
-                                            String aux = (String) playerSelectionModel.get(i);
-                                            if(aux.startsWith(username)){
-                                                playerSelectionModel.remove(i);
-                                                break;
-                                            }
-                                        }
-                                        playerSelectionModel.addElement(username + "/" + sourcename);
-                                        
-                                        break;
-                                    case RequestType.ENTITIY_UPDATE:
-                                        ConnectionHandler.getInstance().addGameData(request);
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                    }
+                                    break;
+                                case RequestType.SOURCE_FILE_RECEIVED:
+                                    String username = ((SourceFileReceived) request).getUsername();
+                                    String sourcename = ((SourceFileReceived) request).getSourcename();
+                                    editPlayerName(username, username + "/" + sourcename);
+                                    break;
+                                case RequestType.SOURCE_FILE_REMOVED:
+                                    username = ((SourceFileRemoved) request).getUsername();
+                                    editPlayerName(username, username);
+                                    break;
+                                case RequestType.ENTITIY_UPDATE:
+                                    if (ve == null) {
+                                        ve = VisualEngine.getInstance();
+                                        ve.setMatchMode(GameModes.MULTIPLAYER_CLIENT);
+                                        ve.setVisible(true);
+                                    }
+                                    ConnectionHandler.getInstance().addGameData(request);
+                                    break;
+                                default:
+                                    break;
                             }
-                        });
-                    
+                        }
+                    });
+
                 } catch (IOException | ClassNotFoundException ex) {
                     ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to read from match");
                     listenForRequests = false;
+                    ex.printStackTrace();
                 }
             }
             return null;
         }
-        
-        /**
-         * Checks if worker should stop
-         * @return 
-         */
-        private boolean checkStatus(){
-            boolean shouldContinue;
-            
-            synchronized(continueToListen){
-                shouldContinue = continueToListen;
-            }
-            
-            return shouldContinue;
-        }
     }
-    
+
     /**
      * Sets the worker to stop or continue listening
-     * @param value 
+     *
+     * @param value
      */
-    private void setWorkerStatus(boolean value){
-        synchronized(listenForRequests){
+    private void setWorkerStatus(boolean value) {
+        synchronized (listenForRequests) {
             listenForRequests = value;
         }
-        
-    }
-    
-    /**
-     * Returns the next request that must be processed
-     * @return
-     * @throws NoSuchElementException 
-     */
-    private Request getRequest() throws NoSuchElementException{
-        Request newRequest;
-        synchronized(requestsList){
-            newRequest = requestsList.pop();
-        }
-        return newRequest;
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -12,30 +12,27 @@ import javax.swing.JPanel;
  *
  * @author Dragos-Alexandru
  */
-public class MainFrame extends JFrame implements FrameConstants{
-    
+public class MainFrame extends JFrame implements FrameConstants {
+
     private static MainFrame instance;
     public String localServerName = null;
-    
-    
-    private final boolean loggedIn = false;
-    
+
     /**
      * Frame-ul principal al programului
      */
-    private MainFrame(){
+    private MainFrame() {
         super("BattleAI");
     }
-    
-    private void setup(){
+
+    private void setup() {
         this.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.add(new MainMenuPanel(this));
     }
-    
-    public static MainFrame getInstance(){
-        if(instance == null){
+
+    public static MainFrame getInstance() {
+        if (instance == null) {
             instance = new MainFrame();
             instance.setup();
             //need to tell the engine the window is closing);
@@ -43,7 +40,7 @@ public class MainFrame extends JFrame implements FrameConstants{
 
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    if(VisualEngine.initialized()){
+                    if (VisualEngine.initialized()) {
                         //telling the engine to close with the window
                         VisualEngine.getInstance().dispatchEvent(new WindowEvent(instance, WindowEvent.WINDOW_CLOSING));    //firing a closing event
                     }
@@ -54,10 +51,10 @@ public class MainFrame extends JFrame implements FrameConstants{
         }
         return instance;
     }
-    
-    public void changePanel(JPanel panel){
-        if(panel instanceof MultiplayerLoginRegisterPanel){
-            if(Player.getInstance().isLoggedIn()){
+
+    public void changePanel(JPanel panel) {
+        if (panel instanceof MultiplayerLoginRegisterPanel) {
+            if (Player.getInstance().isLoggedIn()) {
                 panel = new MultiplayerServerPanel(this);
             }
         }

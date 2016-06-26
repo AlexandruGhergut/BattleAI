@@ -7,41 +7,43 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 public class BulletHitChecker extends Thread {
+
     private boolean running;
     private static BulletHitChecker instance;
-    private static boolean good2go;
+    private static boolean good2go = true;
     private long startingTime;
     private int deathIndex = 1;
-    
-    private BulletHitChecker(){
+
+    private BulletHitChecker() {   
         running = true;
         good2go = true;
     }
-    
-    public static BulletHitChecker getInstance(){
-        if(good2go == false)
+
+    public static BulletHitChecker getInstance() {
+        if (instance == null) {
             instance = new BulletHitChecker();
-        
+        }
+
         return instance;
     }
-    
+
     @Override
-    public void run(){
+    public void run() {
         Tank t;
         Bullet b;
         Rectangle2D tankRect, bulletRect;
         ArrayList<GameEntity> entities = GameEntity.ENTITY_LIST;
-        startingTime = System.currentTimeMillis()/1000;
+        startingTime = System.currentTimeMillis() / 1000;
         
-        while(running){
-            synchronized(entities){
+        while (running) {
+            synchronized (entities) {
                 //if there are N tanks in the game, the first N objects in the
                 //entities array will certainly be the tanks
                 //ergo no O(n^2) for you m8
-                for(int i = 0; i < IntelligenceControlThread.getNumberOfTanks(); i++){
-                    if(entities.get(i) instanceof Tank){
+                for (int i = 0; i < IntelligenceControlThread.getNumberOfTanks(); i++) {
+                    if (entities.get(i) instanceof Tank) {
                         t = (Tank) entities.get(i);
-                        
+
                         if (t.inTheGame()) {
                             tankRect = new Rectangle((int) t.getX(), (int) t.getY(), (int) Constants.VisualConstants.TANK_WIDTH, (int) Constants.VisualConstants.TANK_HEIGHT);
 
@@ -54,15 +56,15 @@ public class BulletHitChecker extends Thread {
                                         entities.remove(b);
                                         t.hitByBullet();
                                         //adding the damage as score
-                                        b.getOwner().addScore((int)EngineConstants.DAMAGE);
-                                        
-                                        if(!t.inTheGame()){
+                                        b.getOwner().addScore((int) EngineConstants.DAMAGE);
+
+                                        if (!t.inTheGame()) {
                                             //adding the death order score
                                             this.scoreDeath(t, this.deathIndex);
                                             deathIndex++;
-                                            
+
                                             //adding the lasting time score
-                                            t.addScore((int)(System.currentTimeMillis()/1000 - this.startingTime));
+                                            t.addScore((int) (System.currentTimeMillis() / 1000 - this.startingTime));
                                         }
                                     }
 
@@ -72,22 +74,27 @@ public class BulletHitChecker extends Thread {
                     }
                 }
             }
-            
+
             try {
-                Thread.sleep(1000/60);
+                Thread.sleep(1000 / 60);
             } catch (InterruptedException ex) {
                 ConsoleFrame.sendMessage("BulletHitChecker", ex.getMessage());
             }
         }
     }
-    
-    public void stopNicely(){
-        
-        good2go = running = false;
+
+    public void stopNicely() {
+        instance = null;
+        running = false;
+        good2go = true;
     }
     
-    private void scoreDeath(Tank t, int index){
-        switch(index){
+    public static boolean ready2Start(){
+        return good2go;
+    }
+
+    private void scoreDeath(Tank t, int index) {
+        switch (index) {
             case 2:
                 t.addScore(20);
                 break;

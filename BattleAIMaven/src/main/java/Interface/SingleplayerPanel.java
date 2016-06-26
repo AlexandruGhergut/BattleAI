@@ -18,26 +18,27 @@ import javax.swing.JPanel;
 public class SingleplayerPanel extends JPanel {
 
     private final MainFrame rootFrame;
-    
+
     private final List<Source> sourceList;
     private final List<Source> addedSourceList = new ArrayList<>();
     private final DefaultListModel listModel = new DefaultListModel();
     private final DefaultListModel addedListModel = new DefaultListModel();
-    
+
     /**
      * Creates new form SingleplayerPanel
+     *
      * @param rootFrame
      */
     public SingleplayerPanel(MainFrame rootFrame) {
-        
-        this.rootFrame = rootFrame; 
+
+        this.rootFrame = rootFrame;
         initComponents();
         sourceList = SourceManager.getInstance().getSourceList();
-        for(Source source:sourceList){
+        for (Source source : sourceList) {
             listModel.addElement(source.toListString());
         }
         listAvailableScripts.setModel(listModel);
-        
+
     }
 
     /**
@@ -166,8 +167,8 @@ public class SingleplayerPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        for(int index:listAvailableScripts.getSelectedIndices()){
-            if(addedSourceList.size() > VisualConstants.MAX_TANK_NUMBER){
+        for (int index : listAvailableScripts.getSelectedIndices()) {
+            if (addedSourceList.size() > VisualConstants.MAX_TANK_NUMBER) {
                 ConsoleFrame.showError("Can't add more than " + VisualConstants.MAX_TANK_NUMBER + " tanks");
                 break;
             }
@@ -180,14 +181,14 @@ public class SingleplayerPanel extends JPanel {
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         List<Object> listaAux = new ArrayList<>();
         List<Source> listaAux2 = new ArrayList<>();
-        for(int index:listChosenScripts.getSelectedIndices()){
+        for (int index : listChosenScripts.getSelectedIndices()) {
             listaAux.add(addedListModel.get(index));
             listaAux2.add(addedSourceList.get(index));
         }
-        for(Object aux:listaAux){
+        for (Object aux : listaAux) {
             addedListModel.removeElement(aux);
         }
-        for(Source auxSource:listaAux2){
+        for (Source auxSource : listaAux2) {
             addedSourceList.remove(auxSource);
         }
         listChosenScripts.setModel(addedListModel);
@@ -196,10 +197,9 @@ public class SingleplayerPanel extends JPanel {
     private void battleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_battleButtonActionPerformed
         if (this.listChosenScripts.getModel().getSize() >= 2) {
 
-            VisualEngine ve = VisualEngine.getInstance(addedSourceList);
-            ve.setMatchMode(GameModes.SINGLEPLAYER);
-            ve.setVisible(true);
-            rootFrame.setVisible(true);
+            VisualEngine visualEngine = VisualEngine.getInstance(addedSourceList);
+            visualEngine.setMatchMode(GameModes.SINGLEPLAYER);
+            visualEngine.setVisible(true);
         }
     }//GEN-LAST:event_battleButtonActionPerformed
 

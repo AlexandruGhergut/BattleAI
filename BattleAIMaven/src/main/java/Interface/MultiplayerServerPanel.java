@@ -15,6 +15,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.SwingWorker;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 /**
  *
  * @author Dragos-Alexandru
@@ -24,43 +25,45 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
     private final MainFrame rootFrame;
     private volatile List<Match> activeMatches;
     private int selected;
-    
+
     /**
      * Creates new form MultiplayerServerBrowser
+     *
      * @param rootFrame
      */
     public MultiplayerServerPanel(MainFrame rootFrame) {
-        
+
         this.rootFrame = rootFrame;
-        
+
         initComponents();
-        
-        HelloMessage.setText("Hello "+Player.getInstance().getUsername());
-        
+
+        HelloMessage.setText("Hello " + Player.getInstance().getUsername());
+
         listAvailableMatches.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 selected = listAvailableMatches.getSelectedIndex();
-                
+
                 if (selected == -1) {
                     listAvailableMatches.setSelectedIndex(0);
                     selected = 0;
                 }
-                
+
                 DefaultListModel<String> dlm = new DefaultListModel<>();
-                
+
                 if (!activeMatches.isEmpty()) {
                     Match selectedMatch = activeMatches.get(selected);
-                    players.setText("Players "+selectedMatch.getNumberOfPlayers()+ "/" + selectedMatch.getMaxNumberOfPlayers());
-               
-                    for(String player:selectedMatch.getPlayerList())
+                    players.setText("Players " + selectedMatch.getNumberOfPlayers() + "/" + selectedMatch.getMaxNumberOfPlayers());
+
+                    for (String player : selectedMatch.getPlayerList()) {
                         dlm.addElement(player);
+                    }
                 }
-                
+
                 listPlayers.setModel(dlm);
             }
         });
-        
+
         refreshButtonActionPerformed(null);
     }
 
@@ -206,10 +209,12 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
         try {
             worker.execute();
             boolean success = worker.get();
-            if(success){
-                rootFrame.changePanel(new MultiplayerMatchPanel(rootFrame, selectedMatch));
+            if (success) {
+                List<String> playerStateList
+                        = (List<String>) ConnectionHandler.getInstance().readFromMatch();
+                rootFrame.changePanel(new MultiplayerMatchPanel(rootFrame, playerStateList));
             }
-        } catch (InterruptedException | ExecutionException ex) {
+        } catch (ClassNotFoundException | IOException | InterruptedException | ExecutionException ex) {
             ConsoleFrame.showError("Failed to connect to match.");
         }
     }//GEN-LAST:event_joinMatchButtonActionPerformed
@@ -223,17 +228,18 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_backButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        
+
         players.setText("Players");
         listPlayers.setModel(new DefaultListModel<>());
-        
+
         RefreshWorker worker = new RefreshWorker();
         try {
             DefaultListModel<String> dlm = new DefaultListModel<>();
             worker.execute();
             activeMatches = worker.get();
-            for(Match match: activeMatches)
+            for (Match match : activeMatches) {
                 dlm.addElement(match.toListMatch());
+            }
             listAvailableMatches.setModel(dlm);
         } catch (InterruptedException | ExecutionException ex) {
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to refresh match list");
@@ -241,32 +247,32 @@ public class MultiplayerServerPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_refreshButtonActionPerformed
 
-    private class JoinWorker extends SwingWorker<Boolean, Void>{
+    private class JoinWorker extends SwingWorker<Boolean, Void> {
 
         Match selectedMatch;
-        
-        private JoinWorker(Match selectedMatch){
+
+        private JoinWorker(Match selectedMatch) {
             this.selectedMatch = selectedMatch;
         }
-        
+
         @Override
         protected Boolean doInBackground() throws Exception {
             ConnectionHandler.getInstance().connectToMatch(selectedMatch);
             return true;
         }
-        
+
     }
-    
-    
+
     /**
      * This worker gets the match list from the master server
      */
     public class RefreshWorker extends SwingWorker<List<Match>, Void> {
+
         @Override
         protected List<Match> doInBackground() throws Exception {
             List<Match> matches = new LinkedList<>();
             try {
-                matches = (List<Match>)ConnectionHandler.getInstance().readFromMasterServer(new GetMatchList());
+                matches = (List<Match>) ConnectionHandler.getInstance().readFromMasterServer(new GetMatchList());
             } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(MultiplayerServerPanel.class.getName()).log(Level.SEVERE, null, ex);
                 ConsoleFrame.showError("Lost connection to the master-server.");

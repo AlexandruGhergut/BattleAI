@@ -7,15 +7,16 @@ package Interface;
 public class MultiplayerChooserPanel extends javax.swing.JPanel {
 
     private final MainFrame rootFrame;
-    
+
     /**
      * Creates new form MultiplayerChooserPanel
+     *
      * @param rootFrame
      */
     public MultiplayerChooserPanel(MainFrame rootFrame) {
-        
+
         this.rootFrame = rootFrame;
-        
+
         initComponents();
     }
 

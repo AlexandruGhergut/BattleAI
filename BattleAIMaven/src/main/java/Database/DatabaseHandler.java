@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 /**
  * DatabaseHandler is a singleton class, the instance of which handles the
  * database.
@@ -13,28 +14,27 @@ import java.util.logging.Logger;
 public class DatabaseHandler {
 
     // JDBC driver name and database URL
-
     private final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
     private final String DB_URL = "jdbc:mysql://localhost/?autoReconnect=true&useSSL=true";
 
     //  Database attributes
     private static String USER = "root";
     private static String PASS = "";
-    private final String DB_NAME = "Test3"; 
+    private final String DB_NAME = "Test3";
 
     private Connection conn;
-    
+
     private static DatabaseHandler instance;
-    
+
     public static DatabaseHandler getInstance(String USER, String PASS) {
-        if(instance == null){
-            instance = new DatabaseHandler(USER,PASS);
+        if (instance == null) {
+            instance = new DatabaseHandler(USER, PASS);
         }
         return instance;
-    } 
-    
+    }
+
     public static DatabaseHandler getInstance() {
-        if(instance == null){
+        if (instance == null) {
             instance = new DatabaseHandler(USER, PASS);
         }
         return instance;
@@ -43,9 +43,10 @@ public class DatabaseHandler {
     private DatabaseHandler(String USER, String PASS) {
         DatabaseHandler.USER = USER;
         DatabaseHandler.PASS = PASS;
-        
-        if (createDatabase() == true){
+
+        if (createDatabase() == true) {
             createTables();
+            InfoPlayer.signUp("Local", "");
         }
     }
 
@@ -62,7 +63,7 @@ public class DatabaseHandler {
                     + " other sql error, please open sql(mysqld) " + se.getMessage());
         } catch (ClassNotFoundException e) {
             // Handle errors for Class.forName
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+e.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + e.getMessage());
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to initializa local JDBC");
         }
     }
@@ -73,7 +74,7 @@ public class DatabaseHandler {
                 conn.close();
             }
         } catch (SQLException se) {
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
         }
     }
 
@@ -99,7 +100,7 @@ public class DatabaseHandler {
                 return false;
             } else {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+sqlException.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + sqlException.getMessage());
                 return false;
             }
         } finally {
@@ -122,8 +123,7 @@ public class DatabaseHandler {
         try {
             stmt = conn.createStatement();
 
-
-            String sqlQuery = "USE "+ DB_NAME;
+            String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
 
             //create PLAYER_DB
@@ -145,16 +145,18 @@ public class DatabaseHandler {
 
             // create ATTEND
             sqlQuery = "CREATE TABLE ATTEND "
-                    + " (id_match INTEGER not NULL REFERENCES "
-                    + " MATCHES_BD(id_match) ON DELETE CASCADE ON UPDATE CASCADE, "
-                    + " player_name VARCHAR(255) not NULL REFERENCES "
-                    + " PLAYER_BD(name) ON DELETE CASCADE ON UPDATE CASCADE, "
-                    + " PRIMARY KEY ( id_match, player_name ))ENGINE=InnoDB ";
+                    + " (id_match INTEGER not NULL, "
+                    + " player_name VARCHAR(255) not NULL, "
+                    + " PRIMARY KEY ( id_match, player_name ),"
+                    + " FOREIGN KEY (id_match) REFERENCES MATCHES_DB(id_match)"
+                    + " ON DELETE CASCADE ON UPDATE CASCADE,"
+                    + " FOREIGN KEY(player_name) REFERENCES PLAYER_DB(name)"
+                    + " ON DELETE CASCADE ON UPDATE CASCADE)ENGINE=InnoDB ";
             stmt.executeUpdate(sqlQuery);
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
@@ -164,7 +166,7 @@ public class DatabaseHandler {
                 }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
     }
@@ -172,8 +174,9 @@ public class DatabaseHandler {
     /**
      * Returns true if name exist in Database on column name, otherwise returns
      * false
+     *
      * @param name
-     * @return 
+     * @return
      */
     public synchronized Boolean findName(String name) {
         preliminaries();
@@ -196,17 +199,18 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null) 
+                if (preparedStmt != null) {
                     preparedStmt.close();
-                
+                }
+
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return false;
@@ -215,9 +219,10 @@ public class DatabaseHandler {
     /**
      * Returns true if name exist in Database on column name, and on the same
      * row, on column password is pass, otherwise returns false
+     *
      * @param name
      * @param pass
-     * @return 
+     * @return
      */
     public synchronized Boolean findAccount(String name, String pass) {
         preliminaries();
@@ -240,17 +245,18 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null) 
+                if (preparedStmt != null) {
                     preparedStmt.close();
-                
+                }
+
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return false;
@@ -272,21 +278,23 @@ public class DatabaseHandler {
             preparedStmt.setString(1, name);
             result = preparedStmt.executeQuery();
 
-            if(result.next())
+            if (result.next()) {
                 return result.getInt(1);
+            }
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return 0;
@@ -304,7 +312,7 @@ public class DatabaseHandler {
             preparedStmt.executeUpdate();
             sqlQuery = "SELECT * FROM MATCHES_DB "
                     + "WHERE id_match IN (SELECT id_match FROM ATTEND "
-                                        + "WHERE player_name = ?)";
+                    + "WHERE player_name = ?)";
             preparedStmt = conn.prepareStatement(sqlQuery);
             preparedStmt.setString(1, name);
             result = preparedStmt.executeQuery();
@@ -321,16 +329,17 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return matches;
@@ -365,16 +374,17 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return matches;
@@ -391,9 +401,9 @@ public class DatabaseHandler {
             preparedStmt = conn.prepareStatement(sqlQuery);
             preparedStmt.executeUpdate();
             sqlQuery = "SELECT * FROM MATCHES_DB"
-                    + " WHERE winner != ?" 
+                    + " WHERE winner != ?"
                     + " and id_match IN (SELECT id_match FROM ATTEND"
-                                + " WHERE player_name = ?)";
+                    + " WHERE player_name = ?)";
             preparedStmt = conn.prepareStatement(sqlQuery);
             preparedStmt.setString(1, name);
             preparedStmt.setString(2, name);
@@ -411,16 +421,17 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return matches;
@@ -444,20 +455,21 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
     }
-    
+
     public synchronized void removePlayer(String name, String pass) {
         preliminaries();
         PreparedStatement preparedStmt = null;
@@ -476,16 +488,17 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
     }
@@ -509,13 +522,14 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
             }
@@ -541,23 +555,25 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
     }
 
     /**
-     * 
-     * @return the primary key of the match that has just been inserted into the table
+     *
+     * @return the primary key of the match that has just been inserted into the
+     * table
      */
     public synchronized int pushMatch(MatchDatabase Match) {
         preliminaries();
@@ -586,16 +602,17 @@ public class DatabaseHandler {
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             closeConnection();
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
         return -1;
@@ -617,77 +634,81 @@ public class DatabaseHandler {
             preparedStmt.setString(2, player);
             preparedStmt.executeUpdate();
 
-
             closeConnection();
 
         } catch (SQLException ex) {
             closeConnection();
-            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+ex.getMessage());
+            ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + ex.getMessage());
         } finally {
             //finally block used to close resources
             try {
-                if (preparedStmt != null)
+                if (preparedStmt != null) {
                     preparedStmt.close();
+                }
             } catch (SQLException se) {
                 closeConnection();
-                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed "+se.getMessage());
+                ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed " + se.getMessage());
             }
         }
     }
-    
+
     /**
      * Verifies if a connection to the database was successful.
+     *
      * @return true if connection was successful, false otherwise
      */
     public synchronized boolean testConnection() {
         preliminaries();
-        
+
         Statement stmt = null;
         ResultSet result = null;
         boolean finalResult = false;
-        
+
         try {
             String sqlQuery = "USE " + DB_NAME;
             stmt = conn.createStatement();
             stmt.executeUpdate(sqlQuery);
-            
+
             sqlQuery = "SELECT 1 FROM DUAL";
             result = stmt.executeQuery(sqlQuery);
-            if (result.next() && result.getInt(1) == 1)
+            if (result.next() && result.getInt(1) == 1) {
                 finalResult = true;
-         } catch (SQLException ex) {
+            }
+        } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (result != null)
+                if (result != null) {
                     result.close();
-                if (stmt != null)
+                }
+                if (stmt != null) {
                     stmt.close();
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
             closeConnection();
         }
-        
+
         return finalResult;
     }
-    
+
     /*
      * @param tableName Name of the table you're looking for
      * @return true if table exists, false otherwise
      */
     public boolean tableExists(String tableName) {
         preliminaries();
-        
+
         ResultSet result = null;
-        
+
         boolean exists = false;
-        
+
         try {
             Statement stmt = conn.createStatement();
             String sqlQuery = "USE " + DB_NAME;
             stmt.executeUpdate(sqlQuery);
-            
+
             sqlQuery = "SELECT COUNT(*) FROM " + tableName;
             result = stmt.executeQuery(sqlQuery);
             exists = result.next();
@@ -695,14 +716,15 @@ public class DatabaseHandler {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (result != null)
+                if (result != null) {
                     result.close();
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
             closeConnection();
         }
-        
+
         return exists;
     }
 }

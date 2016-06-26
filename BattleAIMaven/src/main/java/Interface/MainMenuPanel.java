@@ -10,17 +10,18 @@ import javax.swing.JPanel;
  * @author Dragos-Alexandru
  */
 public class MainMenuPanel extends JPanel {
-    
+
     private final MainFrame rootFrame;
-    
+
     /**
      * Creates new form NewJPanel
+     *
      * @param rootFrame
      */
     public MainMenuPanel(MainFrame rootFrame) {
-        
+
         this.rootFrame = rootFrame;
-        
+
         initComponents();
         Player.getInstance().logOut();
     }
@@ -38,6 +39,7 @@ public class MainMenuPanel extends JPanel {
         multiplayerButton = new javax.swing.JButton();
         editorButton = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
+        devTeamButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
         setMaximumSize(new java.awt.Dimension(600, 400));
@@ -75,18 +77,31 @@ public class MainMenuPanel extends JPanel {
             }
         });
 
+        devTeamButton.setBackground(new java.awt.Color(255, 255, 255));
+        devTeamButton.setText("Dev Team");
+        devTeamButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                devTeamButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap(206, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(editorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(multiplayerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(singleplayerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(194, 194, 194))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(editorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(multiplayerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(singleplayerButton, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(194, 194, 194))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(devTeamButton)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -99,7 +114,9 @@ public class MainMenuPanel extends JPanel {
                 .addComponent(editorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 65, Short.MAX_VALUE)
+                .addComponent(devTeamButton)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -113,18 +130,23 @@ public class MainMenuPanel extends JPanel {
 
     private void editorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editorButtonActionPerformed
         rootFrame.setVisible(false);
-        Editor editor= new Editor(rootFrame);
+        Editor editor = new Editor(rootFrame);
     }//GEN-LAST:event_editorButtonActionPerformed
 
     private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
         int result = JOptionPane.showConfirmDialog(rootFrame, "Sure you wanna quit?", "Quit?", JOptionPane.YES_NO_OPTION);
-        if(result == 0){
+        if (result == 0) {
             System.exit(0);
         }
     }//GEN-LAST:event_exitButtonActionPerformed
 
+    private void devTeamButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_devTeamButtonActionPerformed
+        rootFrame.changePanel(new DevelopersPanel(rootFrame));
+    }//GEN-LAST:event_devTeamButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton devTeamButton;
     private javax.swing.JButton editorButton;
     private javax.swing.JButton exitButton;
     private javax.swing.JButton multiplayerButton;

@@ -11,14 +11,14 @@ public class ChatMessage extends Request {
         super(RequestType.CHAT_MESSAGE);
         this.message = message;
     }
-    
+
     @Override
     public void execute(ObjectOutputStream outputStream) {
         ClientServerDispatcher.getInstance().broadcast(this);
     }
-    
+
     public String getMessage() {
         return message;
     }
-    
+
 }

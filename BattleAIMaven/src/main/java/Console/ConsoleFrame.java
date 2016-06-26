@@ -5,6 +5,7 @@ import Networking.Server.ServerDispatcher;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ScrollPaneConstants;
@@ -12,9 +13,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultCaret;
 
 /**
- *  Clasa singleton prin care se vor afisa toate mesajele importante ale serverului sau
- * clientului pentru debug
- * !OBS: Se poate afisa fie print instanta sau prin metoda statica
+ * Clasa singleton prin care se vor afisa toate mesajele importante ale
+ * serverului sau clientului pentru debug !OBS: Se poate afisa fie print
+ * instanta sau prin metoda statica
+ *
  * @author Dragos-Alexandru
  */
 public final class ConsoleFrame extends JFrame {
@@ -22,31 +24,32 @@ public final class ConsoleFrame extends JFrame {
     private static ConsoleFrame instance;
     public boolean ready = false;
     public static boolean showConsole;
-    
+
     /**
      * Creates new form ConsoleFrame
+     *
      * @param isServer
      */
     private ConsoleFrame() {
         initComponents();
         outputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outputArea.setLineWrap(true);
-        DefaultCaret caret = (DefaultCaret)outputArea.getCaret();
+        DefaultCaret caret = (DefaultCaret) outputArea.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         printMessage("Console", "***Welcome to BattleAI Console***\n");
     }
-    
-    public static ConsoleFrame getInstance(){
-        if(instance == null){
+
+    public static ConsoleFrame getInstance() {
+        if (instance == null) {
             instance = new ConsoleFrame();
-            
+
             instance.inputField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if(e.getKeyChar() == 10){
-                    instance.sendButtonActionPerformed(null);
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    if (e.getKeyChar() == 10) {
+                        instance.sendButtonActionPerformed(null);
+                    }
                 }
-            }
             });
         }
         return instance;
@@ -110,77 +113,81 @@ public final class ConsoleFrame extends JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-        
+
         String command = inputField.getText();
         inputField.setText("");
         parseCommand(command);
-        
+
     }//GEN-LAST:event_sendButtonActionPerformed
-    
-    private void parseCommand(String command){
-        if(command.startsWith("/")){
-            if(command.equals(ConsoleCommands.EXIT.getValue())){
+
+    private void parseCommand(String command) {
+        if (command.startsWith("/")) {
+            if (command.equals(ConsoleCommands.EXIT.getValue())) {
                 this.printMessage("EXIT", "Closing server");
                 System.exit(0);
-            }else if(command.equals(ConsoleCommands.HELP.getValue())){
+            } else if (command.equals(ConsoleCommands.HELP.getValue())) {
                 ConsoleCommands[] listCommands = ConsoleCommands.values();
-                for(ConsoleCommands commandHelp:listCommands){
-                    this.printMessage("HELP", commandHelp.getValue()+" | "+commandHelp.getCommentary());
+                for (ConsoleCommands commandHelp : listCommands) {
+                    this.printMessage("HELP", commandHelp.getValue() + " | " + commandHelp.getCommentary());
                 }
-            }else if(command.equals(ConsoleCommands.CHECK_CONNECTION.getValue())){
+            } else if (command.equals(ConsoleCommands.CHECK_CONNECTION.getValue())) {
                 List<String> activeMatches = getConnections();
-                if(activeMatches.isEmpty()){
+                if (activeMatches.isEmpty()) {
                     this.printMessage("CHECK_CONNECTIONS", "NONE");
-                }else{
+                } else {
                     this.printMessage("CHECK_CONNECTIONS", activeMatches.toString());
                 }
             }
-        }else{
+        } else {
             this.printMessage(this.getClass().getSimpleName(), "Commands must start with /");
         }
     }
-    
-    private List<String> getConnections(){
+
+    private List<String> getConnections() {
         List<String> connectionsIp = ServerDispatcher.getInstance().getLocalConnections();
         return connectionsIp;
     }
-    
+
     /**
-     *  Metoda sincronizata ce afiseaza un mesaj pe consola (Nestatica)
+     * Metoda sincronizata ce afiseaza un mesaj pe consola (Nestatica)
+     *
      * @param className
      * @param message
      */
-    
-    public synchronized void printMessage(String className, String message){
-        if(showConsole){
-            outputArea.append(" "+className+": "+message+"\n");
+    public synchronized void printMessage(String className, String message) {
+        if (showConsole) {
+            outputArea.append(" " + className + ": " + message + "\n");
         }
         sendMessageStandardOutput(className, message);
     }
-    
+
     /**
-     *  Metoda sincronizata ce afiseaza un mesaj pe consola (Statica)
+     * Metoda sincronizata ce afiseaza un mesaj pe consola (Statica)
+     *
      * @param className
      * @param message
      */
-    public synchronized static void sendMessage(String className, String message){
-        if(showConsole){
+    public synchronized static void sendMessage(String className, String message) {
+        if (showConsole) {
             ConsoleFrame consola = getInstance();
             consola.printMessage(className, message);
         }
         sendMessageStandardOutput(className, message);
     }
-    
-    private synchronized static void sendMessageStandardOutput(String className, String message){
-        System.out.println(" "+className+": "+message+"\n");
+
+    private synchronized static void sendMessageStandardOutput(String className, String message) {
+        System.out.println(" " + className + ": " + message + "\n");
     }
-    
-    public static void showError(String message){
+
+    public static void showError(String message) {
         SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);    
+            JDialog dialog = optionPane.createDialog("Error");
+            dialog.setAlwaysOnTop(true);
+            dialog.setVisible(true);
         });
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField inputField;
     private javax.swing.JTextArea outputArea;

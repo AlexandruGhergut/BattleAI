@@ -2,12 +2,12 @@ package Networking.Requests;
 
 import java.io.ObjectOutputStream;
 
-public class RemovePlayer extends Request {
+public class SourceFileRemoved extends Request {
 
     private final String username;
 
-    public RemovePlayer(String username) {
-        super(RequestType.REMOVE_PLAYER);
+    public SourceFileRemoved(String username) {
+        super(RequestType.SOURCE_FILE_REMOVED);
         this.username = username;
     }
 

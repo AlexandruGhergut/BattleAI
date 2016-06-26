@@ -3,10 +3,11 @@ package Interface;
 import Networking.Client.ConnectionHandler;
 import Console.ConsoleFrame;
 import Networking.Server.Match;
-import Networking.Server.NetworkUtilities;
 import Networking.Server.Player;
 import java.awt.Color;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingWorker;
 
@@ -17,16 +18,17 @@ import javax.swing.SwingWorker;
 public class MultiplayerCreateMatch extends javax.swing.JPanel {
 
     private final MainFrame rootFrame;
-    
+
     private Match createdMatch;
-    
+
     /**
      * Creates new form MultiplayerCreateMatch
+     *
      * @param rootFrame
      */
     public MultiplayerCreateMatch(MainFrame rootFrame) {
         initComponents();
-        
+
         this.rootFrame = rootFrame;
     }
 
@@ -141,37 +143,39 @@ public class MultiplayerCreateMatch extends javax.swing.JPanel {
     }//GEN-LAST:event_serverPasswordFieldActionPerformed
 
     private void createMatchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createMatchButtonActionPerformed
-        if (serverNameField.getText().isEmpty() || serverPortField.getText().isEmpty()){
+        if (serverNameField.getText().isEmpty() || serverPortField.getText().isEmpty()) {
             ConsoleFrame.showError("Must give server name and port");
-            if(serverNameField.getText().isEmpty()){
+            if (serverNameField.getText().isEmpty()) {
                 serverNameLabel.setForeground(Color.red);
-            }else{
+            } else {
                 serverNameLabel.setForeground(Color.black);
             }
-            if(serverPortField.getText().isEmpty()){
+            if (serverPortField.getText().isEmpty()) {
                 serverPortLabel.setForeground(Color.red);
-            }else{
+            } else {
                 serverPortLabel.setForeground(Color.black);
             }
             return;
         }
         CreateServerWorker worker = new CreateServerWorker();
-        
+
         try {
             worker.execute();
-            if(worker.get()){
-                if(rootFrame.localServerName == null){
+            if (worker.get()) {
+                if (rootFrame.localServerName == null) {
                     rootFrame.localServerName = serverNameField.getText();
-                }else{
+                } else {
                     ConsoleFrame.showError("Already opened a server");
                 }
-                rootFrame.changePanel(new MultiplayerMatchPanel(rootFrame, createdMatch));
+                List<String> playerStateList
+                        = (List<String>) ConnectionHandler.getInstance().readFromMatch();
+                rootFrame.changePanel(new MultiplayerMatchPanel(rootFrame, playerStateList));
             }
-        } catch (InterruptedException | ExecutionException ex) {
+        } catch (ClassNotFoundException | IOException | InterruptedException | ExecutionException ex) {
             ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to create match");
             ConsoleFrame.showError("Failed to create match");
         }
-        
+
     }//GEN-LAST:event_createMatchButtonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
@@ -179,24 +183,25 @@ public class MultiplayerCreateMatch extends javax.swing.JPanel {
     }//GEN-LAST:event_backButtonActionPerformed
 
     /**
-     * This worker creates a local server and registers it with the master server
+     * This worker creates a local server and registers it with the master
+     * server
      */
-    private class CreateServerWorker extends SwingWorker<Boolean, Object>{
+    private class CreateServerWorker extends SwingWorker<Boolean, Object> {
 
-            @Override
-            protected Boolean doInBackground() throws Exception {
-                InetAddress localIP = InetAddress.getLocalHost();
-                createdMatch = new Match(serverNameField.getText(),
-                        "localhost", Integer.parseInt(serverPortField.getText()),
-                        Player.getInstance().getUsername(), 20);
-                System.out.println(localIP);
-                Boolean succes = ConnectionHandler.getInstance().hostMatch(createdMatch);
-                
-                return succes;
-            }
+        @Override
+        protected Boolean doInBackground() throws Exception {
+            InetAddress localIP = InetAddress.getLocalHost();
+            createdMatch = new Match(serverNameField.getText(),
+                    "localhost", Integer.parseInt(serverPortField.getText()),
+                    Player.getInstance().getUsername(), 20);
+            System.out.println(localIP);
+            Boolean succes = ConnectionHandler.getInstance().hostMatch(createdMatch);
+
+            return succes;
+        }
 
     }
-    
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backButton;

@@ -9,22 +9,24 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+
 /**
- * Game Entity class provides a framework for Bullet,Cannon and Tank classes
- * the methods implemented in this class should work for normal 'X'-'Y' Cartesian  coordinate system so they would probably need to be altered to work with
+ * Game Entity class provides a framework for Bullet,Cannon and Tank classes the
+ * methods implemented in this class should work for normal 'X'-'Y' Cartesian
+ * coordinate system so they would probably need to be altered to work with
  * origin in the top left
  */
 public abstract class GameEntity implements TransformInterface, Serializable {
-    
+
     final static protected ArrayList<GameEntity> ENTITY_LIST = new ArrayList<>();
     static protected int currentIndex = 0;
-    
+
     protected int id;
     //use Area so we can transform using affinetransformer
     //transformation applied to area
     private final AffineTransform transformation;
-    protected double x,y;//this is top left corner of the rectangle
-    protected double  angle, speed , damage , width, height;
+    protected double x, y;//this is top left corner of the rectangle
+    protected double angle, speed, damage, width, height;
 
     /**
      * Constructs an entity at position 'xPos' 'yPos' with speed of 'spd',
@@ -40,9 +42,9 @@ public abstract class GameEntity implements TransformInterface, Serializable {
         y = yPos;
         transformation = new AffineTransform();
         transformation.setToIdentity();
-        
+
     }
-    
+
     /**
      * Gets the speed of the entity.
      *
@@ -96,18 +98,21 @@ public abstract class GameEntity implements TransformInterface, Serializable {
     public void setAngle(double ang) {
         angle = ang % 360;
     }
+
     /**
      * Gets the area of the current entity
+     *
      * @return a Area object representing the area of the current entity
      */
-    
-    public Area getArea(){
+
+    public Area getArea() {
         transformation.setToIdentity();
         Area area = new Area(new Rectangle2D.Double(x, y, width, height));
         transformation.rotate(angle);
         area.transform(transformation);
         return area;
     }
+
     /**
      * Checks for collision .
      *
@@ -116,82 +121,85 @@ public abstract class GameEntity implements TransformInterface, Serializable {
      * otherwise null is returned
      */
     public boolean collision(GameEntity obj) {
-        return getArea().intersects(obj.getRectangle());  
+        return getArea().intersects(obj.getRectangle());
     }
-    
+
     /**
-     *  Get the x coordinate.
+     * Get the x coordinate.
+     *
      * @return a double value.
      */
     public double getX() {
         return x;
     }
-    
+
     /**
-     *  Get the y coordinate.
-     * @return a double value. 
+     * Get the y coordinate.
+     *
+     * @return a double value.
      */
     public double getY() {
         return y;
     }
-    
+
     /**
-     *  Set the x coordinate.
+     * Set the x coordinate.
+     *
      * @param x
      */
-    public void setX(double x){
+    public void setX(double x) {
         this.x = x;
     }
-    
+
     /**
-     *  Set the y coordinate.
+     * Set the y coordinate.
+     *
      * @param y
      */
-    public void setY(double y){
+    public void setY(double y) {
         this.y = y;
     }
-    
+
     @Override
     public void rotate(double degrees) {
-        angle = (angle+degrees)%360;
+        angle = (angle + degrees) % 360;
     }
+
     /**
      * Gets the rectangle of the current entity
+     *
      * @return a Rectangle2D.Double value
      */
-    public Rectangle2D.Double getRectangle(){
-        return new Rectangle2D.Double(x,y,width,height);
+    public Rectangle2D.Double getRectangle() {
+        return new Rectangle2D.Double(x, y, width, height);
     }
-    
+
     /**
      * Creates a deep clone using serialization.
+     *
      * @return A deep clone of the current object.
      */
-    public GameEntity deepClone(){
+    public GameEntity deepClone() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
-            
+
             oos.writeObject(this);
-            
+
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
             ObjectInputStream ois = new ObjectInputStream(bais);
-            
+
             return (GameEntity) ois.readObject();
-        } catch (IOException ex) {
-            ConsoleFrame.sendMessage("GameEntity: ", ex.getMessage());
-        } catch (ClassNotFoundException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             ConsoleFrame.sendMessage("GameEntity: ", ex.getMessage());
         }
-        
+
         return null;
     }
-    
+
     @Override
     public String toString() {
         return "GameEntity{" + "id=" + id + ", transformation=" + transformation + ", x=" + x + ", y=" + y + ", angle=" + angle + ", speed=" + speed + ", damage=" + damage + '}';
     }
-    
-    
 
 }

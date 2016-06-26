@@ -7,10 +7,10 @@ import java.util.Objects;
  *
  * @author Dragos-Alexandru
  */
-public class Source implements Serializable{
-    
+public class Source implements Serializable {
+
     static final long serialVersionUID = 1L;
-    
+
     private final String name;
     private String author;
     private final String content;
@@ -20,13 +20,13 @@ public class Source implements Serializable{
         this.name = name;
         this.author = author;
     }
-    
+
     public Source(String name, String author) {
         this.content = "";
         this.name = name;
         this.author = author;
     }
-    
+
     public String getContent() {
         return content;
     }
@@ -38,15 +38,15 @@ public class Source implements Serializable{
     public String getAuthor() {
         return author;
     }
-    
+
     public void setAuthor(String author) {
         this.author = author;
     }
-    
-    public String toListString(){
-        return name+"/"+author;
+
+    public String toListString() {
+        return name + "/" + author;
     }
-    
+
     @Override
     public String toString() {
         return "Source{" + "name=" + name + ", author=" + author + ", content=" + content + '}';
@@ -54,7 +54,7 @@ public class Source implements Serializable{
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof Source){
+        if (obj instanceof Source) {
             Source sObj = (Source) obj;
             return this.name.equals(sObj.name) && this.author.equals(sObj.author);
         }
@@ -68,6 +68,5 @@ public class Source implements Serializable{
         hash = 53 * hash + Objects.hashCode(this.author);
         return hash;
     }
-    
-    
+
 }
