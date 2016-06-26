@@ -39,7 +39,7 @@ public class DatabaseTest {
 
     @Test
     public void sqlInjectionTest2() {
-        String username = "johnny' OR 1=1/*";
+        String username = "johnny=' OR 1=1/*";
         assertEquals(InfoPlayer.isValidName(username), true);
 
     }

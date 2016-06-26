@@ -46,6 +46,7 @@ public class DatabaseHandler {
 
         if (createDatabase() == true) {
             createTables();
+            InfoPlayer.signUp("Local", "");
         }
     }
 
