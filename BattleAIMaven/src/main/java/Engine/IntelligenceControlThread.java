@@ -15,8 +15,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class IntelligenceControlThread extends Thread {
 
@@ -145,7 +143,6 @@ public class IntelligenceControlThread extends Thread {
 
     public void gameOver() {
         this.stopNicely();
-        VisualEngine.getInstance().closeWindow();
         long endTime = System.currentTimeMillis() - startTime;
         endTime /= 1000;
         PacketManager.getInstance().gameOver();

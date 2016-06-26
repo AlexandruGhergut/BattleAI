@@ -4,6 +4,8 @@ import Console.ConsoleFrame;
 import Enums.GameModes;
 import Networking.Client.ConnectionHandler;
 import Networking.Requests.EntityUpdateRequest;
+import Networking.Requests.Request;
+import Networking.Requests.RequestType;
 import Networking.Server.Packet;
 
 /**
@@ -73,9 +75,14 @@ public class Animator extends Thread {
                 if (currentPacket != null && currentPacket.framesLeft() > 0) {
                     panel.entityList = currentPacket.consume();
                 } else {
-                    currentPacket
-                            = ((EntityUpdateRequest) ConnectionHandler.getInstance().getGameData()).packet;
-                    panel.entityList = currentPacket.consume();
+                    Request request = ConnectionHandler.getInstance().getGameData();
+                    if (request.getType() == RequestType.END_BATTLE)
+                        running = false;
+                    else { 
+                        currentPacket
+                            = ((EntityUpdateRequest)request).packet;
+                        panel.entityList = currentPacket.consume();
+                    }
                 }
 
             } catch (InterruptedException ex) {

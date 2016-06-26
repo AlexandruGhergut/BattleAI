@@ -50,7 +50,8 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
     private boolean ready = false;
     private int lastSelectedIndex = -1;
     private Boolean listenForRequests = true;
-
+    private VisualEngine ve = null;
+    
     /**
      * Creates new form MultiplayerMatchPanel
      *
@@ -342,7 +343,7 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
             ClientServerDispatcher.getInstance().broadcast(new StartBattle());
 
             List<Source> playersSources = new LinkedList(playersSourcesMap.values());
-            VisualEngine ve = VisualEngine.getInstance(playersSources);
+            ve = VisualEngine.getInstance(playersSources);
             ve.setMatchMode(GameModes.MULTIPLAYER_HOST);
             ve.setVisible(true);
         }
@@ -448,15 +449,18 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                 case RequestType.START_BATTLE:
                                     ConnectionHandler.getInstance().clearGameData();
                                     if (!ConnectionHandler.getInstance().isHost()) {
-                                        VisualEngine ve = VisualEngine.getInstance();
+                                        ve = VisualEngine.getInstance();
                                         ve.setMatchMode(GameModes.MULTIPLAYER_CLIENT);
                                         ve.setVisible(true);
                                     }
                                     break;
                                 case RequestType.END_BATTLE:
+                                    ConnectionHandler.getInstance().addGameData(request);
+                                    VisualEngine.getInstance().closeWindow();
                                     EndBattle endBattleRequest = (EndBattle) request;
                                     Scoreboard scor = new Scoreboard(endBattleRequest.getTankList());
                                     scor.setVisible(true);
+                                    ve.setVisible(false);
                                     if (ConnectionHandler.getInstance().isHost()) {
                                         EndBattleDBUpdate dbUpdateRequest
                                                 = new EndBattleDBUpdate(endBattleRequest);
@@ -478,6 +482,11 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                     editPlayerName(username, username);
                                     break;
                                 case RequestType.ENTITIY_UPDATE:
+                                    if (ve == null) {
+                                        ve = VisualEngine.getInstance();
+                                        ve.setMatchMode(GameModes.MULTIPLAYER_CLIENT);
+                                        ve.setVisible(true);
+                                    }
                                     ConnectionHandler.getInstance().addGameData(request);
                                     break;
                                 default:
