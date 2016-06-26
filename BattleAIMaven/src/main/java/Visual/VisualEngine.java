@@ -79,7 +79,6 @@ public class VisualEngine extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(Constants.VisualConstants.ENGINE_TITLE);
-        setPreferredSize(new Dimension(Constants.VisualConstants.ENGINE_WIDTH, Constants.VisualConstants.ENGINE_HEIGHT));
         setResizable(false);
         setSize(new Dimension(Constants.VisualConstants.ENGINE_WIDTH, Constants.VisualConstants.ENGINE_HEIGHT));
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -90,10 +89,6 @@ public class VisualEngine extends javax.swing.JFrame {
                 formWindowOpened(evt);
             }
         });
-
-        visualPanel1.setMaximumSize(new Dimension(Constants.VisualConstants.ENGINE_WIDTH, Constants.VisualConstants.ENGINE_HEIGHT));
-        visualPanel1.setMinimumSize(new Dimension(Constants.VisualConstants.ENGINE_WIDTH, Constants.VisualConstants.ENGINE_HEIGHT));
-        visualPanel1.setPreferredSize(new Dimension(Constants.VisualConstants.ENGINE_WIDTH, Constants.VisualConstants.ENGINE_HEIGHT));
 
         javax.swing.GroupLayout visualPanel1Layout = new javax.swing.GroupLayout(visualPanel1);
         visualPanel1.setLayout(visualPanel1Layout);

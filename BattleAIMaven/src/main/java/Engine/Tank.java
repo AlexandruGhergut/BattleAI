@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.*;
+import java.util.Random;
 
 public class Tank extends GameEntity implements Serializable, MovementInterface, TransformInterface, Drawable {
 
@@ -23,7 +24,11 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
     private int rotate_state, move_state;
     private int score = 0;
     public Color color = Color.WHITE;
-
+    
+    private static Rectangle arenaRectangle;
+    private Random random;
+    private Rectangle2D.Double tankRect;
+    
     //the id of the tank will be the current number of instanced tank classes
     private static int staticId;
 
@@ -32,8 +37,11 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
      */
     static {
         staticId = 0;
+        arenaRectangle = new Rectangle(0, 0, VisualConstants.ENGINE_WIDTH,
+                                            VisualConstants.ENGINE_HEIGHT);
     }
-
+    
+    // this should be updated if we intend to use it
     public Tank(double xPos, double yPos, String playerName) {
         super(staticId, xPos, yPos);
         this.tank_id = staticId++;
@@ -47,40 +55,41 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
         speed = EngineConstants.TANK_SPEED;
         life = EngineConstants.LIFE;
     }
-
+    
     public Tank(String name, String author) {
         super(0, 0, 0);
-        Rectangle tankRect = new Rectangle();
-        Rectangle otherTank = new Rectangle();
-
+        tankRect = new Rectangle2D.Double();
+        tankRect.setRect(0, 0, VisualConstants.TANK_WIDTH, VisualConstants.TANK_HEIGHT);
+        
+        Rectangle2D.Double otherTank = new Rectangle2D.Double();
+        otherTank.setRect(0, 0, VisualConstants.TANK_WIDTH, VisualConstants.TANK_HEIGHT);
         this.name = name;
         this.author = author;
 
-        x = (int) (Math.random() * 1000 % VisualConstants.ENGINE_WIDTH);
-        y = (int) (Math.random() * 1000 % VisualConstants.ENGINE_HEIGHT);
+        random = new Random();
+        generatePosition();
 
         tankRect.x = (int) x;
         tankRect.y = (int) y;
+        width = (int) VisualConstants.TANK_WIDTH;
+        height = (int) VisualConstants.TANK_HEIGHT;
 
         synchronized (this) {
             for (int i = 0; i < GameEntity.ENTITY_LIST.size(); i++) {
                 if (GameEntity.ENTITY_LIST.get(i) instanceof Tank) {
                     Tank tank = (Tank) GameEntity.ENTITY_LIST.get(i);
 
-                    otherTank.x = (int) tank.getX();
-                    otherTank.y = (int) tank.getY();
+                    otherTank.x = tank.getX();
+                    otherTank.y = tank.getY();
 
-                    if (!isInsideArena() || tankRect.intersects(otherTank)) {
-                        x = (int) ((Math.random() * 1000) % VisualConstants.ENGINE_WIDTH)
-                                - 10 - VisualConstants.TANK_WIDTH;
-                        y = (int) ((Math.random() * 1000) % VisualConstants.ENGINE_HEIGHT)
-                                - 10 - VisualConstants.TANK_HEIGHT;
+                    if (tankRect.intersects(otherTank)) {
+                        generatePosition();
                         i = 0;
                     }
                 }
             }
         }
-
+        
         System.out.println(x + " " + y);
 
         //super(staticId,xPos, yPos);
@@ -88,8 +97,6 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
         //this.y = yPos;
         this.tank_id = staticId++;
         this.life = 100;
-        width = (int) VisualConstants.TANK_WIDTH;
-        height = (int) VisualConstants.TANK_HEIGHT;
         cannon = new Cannon(staticId, x, y, this);
         damage = EngineConstants.DAMAGE;
         angle = EngineConstants.ANGLE;
@@ -153,6 +160,16 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
     }
 
     @Override
+    public void setX(double x) {
+        setPosition(x, getY());
+    }
+    
+    @Override
+    public void setY(double y) {
+        setPosition(getX(), y);
+    }
+    
+    @Override
     public void moveUp() {
         setY(getY() - 1);
     }
@@ -189,8 +206,10 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
      * @return Value which specifies whether the tank is inside the arena or
      * not.
      */
-    public boolean isInsideArena(Point p) {
-        return p.x - 10 > 0 && p.y - 10 > 0 && p.x + VisualConstants.TANK_WIDTH + 10 < VisualConstants.ENGINE_WIDTH && p.y + VisualConstants.TANK_HEIGHT + 40 < VisualConstants.ENGINE_HEIGHT;
+    public boolean isInsideArena(Point2D.Double p) {
+        // we use strictly equals to provide some distance from the wall
+        return p.getX() > 0 && p.getX() < VisualConstants.ENGINE_WIDTH&&
+                p.getY() > 0 && p.getY() < VisualConstants.ENGINE_HEIGHT;
     }
 
     /**
@@ -199,7 +218,7 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
      * not.
      */
     public final boolean isInsideArena() {
-        return this.x - 10 > 0 && this.y - 10 > 0 && this.x + VisualConstants.TANK_WIDTH + 10 < VisualConstants.ENGINE_WIDTH && this.y + VisualConstants.TANK_HEIGHT + 35 < VisualConstants.ENGINE_HEIGHT;
+        return arenaRectangle.contains(tankRect);
     }
 
     /**
@@ -217,10 +236,11 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
         double c = Math.cos(angle * Math.PI / 180.0);
         x += c * speed;
         y += s * speed;
-
+        setPosition(x, y);
         if (!isInsideArena()) {
             x = origX;
             y = origY;
+            setPosition(x, y);
             tankCapsule.hitArenaWall();
         } else {
             //we store the angle of the cannon in cangle
@@ -332,6 +352,22 @@ public class Tank extends GameEntity implements Serializable, MovementInterface,
         return score;
     }
 
+    private void generatePosition() {
+        setPosition(random.nextInt((int)arenaRectangle.getMaxX()), 
+                random.nextInt((int)arenaRectangle.getMaxY()));
+        while (!isInsideArena()) {
+            setPosition(random.nextInt(VisualConstants.ENGINE_WIDTH), 
+                random.nextInt(VisualConstants.ENGINE_HEIGHT));
+        }
+    }
+    
+    private void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+        tankRect.x = x;
+        tankRect.y = y;
+    }
+    
     @Override
     public String toString() {
         return "Tank{" + " playerName=" + author + ", life=" + life + ", cannon="

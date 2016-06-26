@@ -489,6 +489,7 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                 } catch (IOException | ClassNotFoundException ex) {
                     ConsoleFrame.sendMessage(this.getClass().getSimpleName(), "Failed to read from match");
                     listenForRequests = false;
+                    ex.printStackTrace();
                 }
             }
             return null;
