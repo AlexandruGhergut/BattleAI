@@ -1,6 +1,19 @@
 # BattleAI 
-master [![Build Status](https://travis-ci.org/AlexandruGhergut/BattleAI.svg?branch=master)](https://travis-ci.org/AlexandruGhergut/BattleAI) <br>
-trunk [![Build Status](https://travis-ci.org/AlexandruGhergut/BattleAI.svg?branch=trunk)](https://travis-ci.org/AlexandruGhergut/BattleAI) 
+<table>
+  <tr>
+    <th> Branch </th>
+    <th> Build status </th>
+  </tr>
+  <tr> 
+    <td> <a href="https://github.com/AlexandruGhergut/BattleAI/tree/master"> master </a> </td>
+    <td> <img src="https://travis-ci.org/AlexandruGhergut/BattleAI.svg?branch=master" alt="status"> </td>
+  </tr>
+  <tr>
+    <td> <a href="https://github.com/AlexandruGhergut/BattleAI/tree/trunk"> trunk </a> </td>
+    <td> <img src="https://travis-ci.org/AlexandruGhergut/BattleAI.svg?branch=trunk" alt="status"> </td
+  <tr>
+</table>
+
 <p> BattleAI is a game where players can write Java programs to control a single robot and then use it to battle other
 players (computer or human). <p>
 
