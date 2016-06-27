@@ -456,7 +456,6 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                     break;
                                 case RequestType.END_BATTLE:
                                     ConnectionHandler.getInstance().addGameData(request);
-                                    VisualEngine.getInstance().closeWindow();
                                     EndBattle endBattleRequest = (EndBattle) request;
                                     Scoreboard scor = new Scoreboard(endBattleRequest.getTankList());
                                     scor.setVisible(true);
@@ -471,6 +470,8 @@ public class MultiplayerMatchPanel extends javax.swing.JPanel {
                                                     "Failed to request ");
                                         }
                                     }
+                                    else if (!ConnectionHandler.getInstance().isHost())
+                                        VisualEngine.getInstance().closeWindow();
                                     break;
                                 case RequestType.SOURCE_FILE_RECEIVED:
                                     String username = ((SourceFileReceived) request).getUsername();
