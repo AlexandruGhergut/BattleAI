@@ -146,6 +146,7 @@ public class IntelligenceControlThread extends Thread {
         long endTime = System.currentTimeMillis() - startTime;
         endTime /= 1000;
         PacketManager.getInstance().gameOver();
+        VisualEngine.getInstance().closeWindow();
         ClientServerDispatcher.getInstance().broadcast(new EndBattle(tanks, endTime));
     }
 
