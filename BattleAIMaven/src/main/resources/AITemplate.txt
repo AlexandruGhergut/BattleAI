@@ -4,6 +4,16 @@ import Intelligence.IntelligenceTemplate;
 import Engine.TankCapsule;
 import java.awt.Point;
 
+/*
+Methods you can call:
+	moveFront()
+	rotate(degrees) - rotates the tank body by degrees amount
+	rotateCannon(degrees) - rotates the tank cannon by degrees amount
+	fire()
+	getLife() - returns current life amount
+	getEnergy() - returns current energy amount
+*/
+
 public class <name> extends IntelligenceTemplate{ 
     
     public <name>(){
