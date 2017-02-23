@@ -23,9 +23,9 @@ public abstract class PathConstants {
     private static String getResourceFolderPath(){
         String path = "target/classes/";
         Map<String,String> map = System.getenv();
-        if(map.get("NB_EXEC_MAVEN_PROCESS_UUID") == null){
-            path = "classes/";
-        }
+        //if(map.get("NB_EXEC_MAVEN_PROCESS_UUID") == null){
+        //    path = "classes/";
+        //}
         return path;
     }
 }
