@@ -24,3 +24,4 @@ players (computer or human). <p>
 <p> <code> -c </code> - starts normally with the console enabled </p>
 <p> <code> -s </code> - starts the master-server (requires MySQL database server installed) </p>
 <p> <code> -sc </code> - starts the master-server with the console enabled </p>
+![Alt text](http://alexandrughergut.github.io/res/projects/BattleAI/screenshot1.png "Screenshot")
